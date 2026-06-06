@@ -10,6 +10,8 @@ export type Skill = "listening" | "reading" | "writing" | "speaking";
 
 export type AccessStatus = "pending" | "active" | "locked";
 
+export type LearningPath = "ielts" | "general";
+
 export type FeedbackKind = "complaint" | "feedback" | "placement" | "system" | "suggestion";
 
 export interface AcademyPrice {
@@ -40,6 +42,7 @@ export interface Profile {
   access_expires_at: string | null;
   daily_goal: number;
   code_claimed: boolean;
+  learning_path: LearningPath | null;
   created_at: string;
 }
 

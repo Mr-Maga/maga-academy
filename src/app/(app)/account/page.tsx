@@ -5,6 +5,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { ROLE_LABELS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { AccountForm } from "./account-form";
+import { chooseLearningPath } from "@/app/onboarding/actions";
 
 export const metadata: Metadata = { title: "Account" };
 
@@ -40,6 +41,40 @@ export default async function AccountPage() {
         phone={profile.phone ?? ""}
         dailyGoal={profile.daily_goal ?? 20}
       />
+
+      {profile.role === "student" && (
+        <Card className="space-y-3">
+          <div className="text-sm font-semibold">O‘quv yo‘nalishi</div>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              ["ielts", "🎓 IELTS"],
+              ["general", "💬 General"],
+            ] as const).map(([key, label]) => {
+              const active = profile.learning_path === key;
+              if (active) {
+                return (
+                  <div
+                    key={key}
+                    className="rounded-xl border-2 border-primary-soft bg-primary-soft/10 px-3 py-2.5 text-center text-sm font-semibold text-primary-soft"
+                  >
+                    {label} ✓
+                  </div>
+                );
+              }
+              return (
+                <form key={key} action={chooseLearningPath.bind(null, key)}>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-center text-sm font-medium transition hover:border-primary-soft/40"
+                  >
+                    {label}
+                  </button>
+                </form>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <SignOutButton />
     </div>

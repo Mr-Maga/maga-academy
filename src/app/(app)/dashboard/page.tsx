@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
 import { StudentDashboard } from "./student-dashboard";
+import { GeneralDashboard } from "./general-dashboard";
 import { TeacherDashboard } from "./teacher-dashboard";
 import { AdminDashboard } from "./admin-dashboard";
 import { ParentDashboard } from "./parent-dashboard";
@@ -18,6 +19,10 @@ export default async function DashboardPage() {
     case "parent":
       return <ParentDashboard profile={profile} />;
     default:
-      return <StudentDashboard profile={profile} />;
+      return profile.learning_path === "general" ? (
+        <GeneralDashboard profile={profile} />
+      ) : (
+        <StudentDashboard profile={profile} />
+      );
   }
 }

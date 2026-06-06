@@ -42,6 +42,7 @@ create table if not exists public.profiles (
   access_expires_at timestamptz,
   daily_goal int not null default 20,
   code_claimed boolean not null default false,
+  learning_path text check (learning_path in ('ielts','general')),
   created_at timestamptz not null default now()
 );
 

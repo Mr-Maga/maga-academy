@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { TopBar } from "@/components/app-shell/top-bar";
 import { AiTutorLauncher } from "@/components/ai/ai-tutor-launcher";
@@ -9,6 +10,10 @@ import { getNavBadges } from "@/lib/badges";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireActiveProfile();
   const role = profile.role!;
+
+  // Students must pick a learning track (IELTS vs General) before entering.
+  if (role === "student" && !profile.learning_path) redirect("/onboarding");
+
   const showTutor = role === "student" || role === "parent";
   const badges = await getNavBadges(profile);
 
