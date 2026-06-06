@@ -82,21 +82,21 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
         </p>
       </section>
 
-      {/* AI examiners — the stars */}
+      {/* AI tools — the stars */}
       <section className="space-y-3">
-        <h2 className="px-1 text-sm font-semibold text-muted">AI imtihonchilar ✨</h2>
+        <h2 className="px-1 text-sm font-semibold text-muted">AI Tools ✨</h2>
         <div className="grid grid-cols-2 gap-3">
           <Link href="/writing" className="block">
-            <ActionTile emoji="✍️" title="Writing" subtitle="Tezkor band + tahlil" from="primary" />
+            <ActionTile emoji="✍️" title="Writing" subtitle="Instant band & feedback" from="primary" />
           </Link>
           <Link href="/speaking" className="block">
-            <ActionTile emoji="🎙️" title="Speaking" subtitle="Gapiring, band oling" from="indigo" />
+            <ActionTile emoji="🎙️" title="Speaking" subtitle="Speak, get your band" from="indigo" />
           </Link>
           <Link href="/vocab" className="block">
-            <ActionTile emoji="📇" title="Lug‘at" subtitle="SRS + AI tarjimon" from="teal" />
+            <ActionTile emoji="📇" title="Vocabulary" subtitle="Flashcards + AI translator" from="teal" />
           </Link>
           <Link href="/exercises" className="block">
-            <ActionTile emoji="🧠" title="AI Mashq" subtitle="Cheksiz savollar" from="amber" />
+            <ActionTile emoji="🧠" title="Practice" subtitle="Endless questions" from="amber" />
           </Link>
         </div>
       </section>
