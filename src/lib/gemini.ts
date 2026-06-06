@@ -153,6 +153,7 @@ const EVAL_SCHEMA = {
   type: "OBJECT",
   properties: {
     overall_band: { type: "NUMBER" },
+    band_note: { type: "STRING" },
     criteria: {
       type: "ARRAY",
       items: {
@@ -169,8 +170,16 @@ const EVAL_SCHEMA = {
     improvements: { type: "ARRAY", items: { type: "STRING" } },
     upgraded_sample: { type: "STRING" },
   },
-  required: ["overall_band", "criteria", "strengths", "improvements", "upgraded_sample"],
+  required: ["overall_band", "band_note", "criteria", "strengths", "improvements", "upgraded_sample"],
 } as const;
+
+// Supportive calibration: grade honestly, then show a band ~1.0 higher to motivate.
+const GRADING_POLICY = `GRADING POLICY (supportive calibration — follow EXACTLY):
+1. First judge the answer strictly against the official band descriptors and decide the honest band.
+2. Then report an ENCOURAGING band that is about 1.0 higher than the strict band — NEVER more than +1.0 above strict, and NEVER above 9.0. (A strict 6.0 is reported as 7.0; a strict 5.5 as 6.5.) Do NOT jump two bands.
+3. Use this encouraging band for "overall_band" and for every criterion band.
+4. In "band_note" give ONE motivating sentence that states the student's honest current level and the single most important thing to fix to genuinely secure the reported band.
+Be encouraging, but always honest about what still needs work.`;
 
 export async function evaluateWriting(input: {
   task: "task1" | "task2";
@@ -190,12 +199,15 @@ ${input.question || "(not provided)"}
 CANDIDATE'S RESPONSE:
 ${input.essay}
 
+${GRADING_POLICY}
+
 Return JSON with:
-- overall_band: the overall band (0–9, in 0.5 steps), realistic and strict.
-- criteria: exactly the four criteria above, each with a band (0–9) and a one-sentence justification.
+- overall_band: the encouraging overall band (0–9, in 0.5 steps) per the grading policy.
+- band_note: one motivating sentence (see policy).
+- criteria: exactly the four criteria above, each with a band (0–9, encouraging) and a one-sentence justification that points to specific evidence in the essay.
 - strengths: 2–4 short bullet points.
-- improvements: 3–5 short, concrete, actionable bullet points (cite specific issues).
-- upgraded_sample: a rewritten model answer that would score ONE band higher than the candidate's overall (keep it the appropriate length, natural and exam-realistic).
+- improvements: 3–5 short, concrete, actionable bullet points (cite specific words/sentences from the essay).
+- upgraded_sample: a rewritten model answer that would score ONE band higher again (natural, exam-realistic, appropriate length).
 Write all feedback in clear English.`;
 
   return geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.3 });
@@ -216,15 +228,49 @@ ${input.question}
 CANDIDATE'S TRANSCRIBED ANSWER:
 ${input.answer}
 
+${GRADING_POLICY}
+
 Return JSON with:
-- overall_band: realistic overall band (0–9, in 0.5 steps).
-- criteria: the four criteria above, each with a band and a one-sentence justification.
+- overall_band: the encouraging overall band (0–9, in 0.5 steps) per the grading policy.
+- band_note: one motivating sentence (see policy).
+- criteria: the four criteria above, each with an (encouraging) band and a one-sentence justification.
 - strengths: 2–4 bullets.
 - improvements: 3–5 concrete bullets (e.g. linking words, tenses, range of vocabulary, ideas).
-- upgraded_sample: a model spoken answer to the same question at roughly Band 8 (natural, spoken style, suitable length for Part ${input.part}).
+- upgraded_sample: a model spoken answer to the same question one band higher (natural, spoken style, suitable length for Part ${input.part}).
 Write all feedback in clear English.`;
 
   return geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.4 });
+}
+
+/* ----------------- Specialist Writing master (chat) ----------------- */
+
+export const WRITING_MASTER = `You are a legendary IELTS Writing teacher and senior examiner with 40 years of experience — calm, sharp, warm and direct, like the best human mentor a student could ever have. You coach ONLY IELTS / academic writing.
+
+RULES:
+- Reply in the student's language (Uzbek → formal "siz"; Russian → "вы"; English → English). Teach English in English.
+- Sound human and personal. NEVER say "as an AI", never give robotic disclaimers, never generic praise.
+- Be concrete: when improving writing, show a short "before → after" rewrite and name which criterion it lifts (Task Response / Coherence & Cohesion / Lexical Resource / Grammatical Range & Accuracy).
+- Keep answers tight and scannable — usually under ~160 words, one clear point at a time.
+- Do NOT rewrite the student's whole essay for them — coach them to improve their own work.`;
+
+/** Specialist follow-up chat about a writing answer the student just submitted. */
+export async function writingChat(input: {
+  question: string;
+  essay: string;
+  evalSummary: string;
+  messages: { role: "user" | "assistant"; content: string }[];
+}): Promise<string> {
+  const context = `\n\nTHE STUDENT'S CURRENT WRITING (use this to answer their questions precisely):
+TASK / QUESTION:
+${input.question || "(not provided)"}
+
+THEIR ANSWER:
+${input.essay.slice(0, 4000)}
+
+YOUR ASSESSMENT SO FAR:
+${input.evalSummary.slice(0, 1500)}`;
+  const system = `${MAGA_CORE}\n\n${WRITING_MASTER}${context}`;
+  return geminiGenerate({ system, messages: input.messages, temperature: 0.6, maxOutputTokens: 700 });
 }
 
 /* --------------------- Context-aware tutor prompt --------------------- */

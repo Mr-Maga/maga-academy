@@ -181,6 +181,7 @@ export interface BandCriterion {
 }
 export interface AiEvaluation {
   overall_band: number;
+  band_note?: string;
   criteria: BandCriterion[];
   strengths: string[];
   improvements: string[];

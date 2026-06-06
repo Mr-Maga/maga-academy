@@ -21,7 +21,11 @@ export function AiEvaluationView({ ev }: { ev: AiEvaluation }) {
         <div>
           <div className="text-sm text-muted">Estimated overall band</div>
           <div className="text-lg font-bold">IELTS {ev.overall_band.toFixed(1)}</div>
-          <div className="text-xs text-subtle">AI estimate — your teacher confirms the final score.</div>
+          {ev.band_note ? (
+            <div className="mt-0.5 text-xs text-amber">{ev.band_note}</div>
+          ) : (
+            <div className="text-xs text-subtle">AI estimate — your teacher confirms the final score.</div>
+          )}
         </div>
       </Card>
 
