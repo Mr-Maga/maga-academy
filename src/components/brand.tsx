@@ -4,11 +4,13 @@ export function Logo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "grid place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary-soft font-black text-primary-fg shadow-lg shadow-primary/30",
+        "relative grid place-items-center overflow-hidden rounded-2xl font-black text-primary-fg shadow-lg shadow-primary/30",
         className,
       )}
+      style={{ backgroundImage: "linear-gradient(135deg, #0d9488, #14b8a6 50%, #2dd4bf)" }}
     >
-      <span className="leading-none">M</span>
+      <span className="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-white/25 blur-md" />
+      <span className="relative leading-none">M</span>
     </div>
   );
 }

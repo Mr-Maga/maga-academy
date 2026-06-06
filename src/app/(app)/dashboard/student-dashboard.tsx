@@ -1,140 +1,133 @@
 import Link from "next/link";
-import { Flame, ClipboardList, Target, TrendingUp, BookOpen, Dumbbell, Trophy, ArrowRight, Compass } from "lucide-react";
+import { Flame, Trophy, Zap, CalendarCheck, Sparkles, ArrowRight, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Card, LevelChip, LinkCard, StatCard } from "@/components/ui";
-import { SKILL_MAP } from "@/lib/constants";
-import { relativeDue } from "@/lib/utils";
-import type { Homework, Profile, StudentProgress } from "@/lib/types";
+import { BandRing, StatPill, XpBar, ActionTile } from "@/components/gamify";
+import type { Profile, StudentProgress } from "@/lib/types";
+
+// Uzbekistan is UTC+5 (no DST) — give a correct time-of-day greeting.
+function greeting(): string {
+  const h = (new Date().getUTCHours() + 5) % 24;
+  if (h < 6) return "Tungi mashq 🌙";
+  if (h < 12) return "Xayrli tong ☀️";
+  if (h < 18) return "Xayrli kun 👋";
+  return "Xayrli kech 🌆";
+}
 
 export async function StudentDashboard({ profile }: { profile: Profile }) {
   const supabase = await createClient();
 
-  const [{ data: progressRaw }, { data: homeworkRaw }, { data: subsRaw }] = await Promise.all([
+  const [{ data: progressRaw }, { data: evalsRaw }] = await Promise.all([
     supabase.rpc("student_progress"),
-    supabase.from("homework").select("*").order("due_at", { ascending: true }).limit(20),
-    supabase.from("submissions").select("homework_id").eq("student_id", profile.id),
+    supabase
+      .from("evaluations")
+      .select("overall_band, kind, result, created_at")
+      .eq("student_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(200),
   ]);
 
   const progress = (progressRaw as StudentProgress | null) ?? null;
-  const submitted = new Set((subsRaw ?? []).map((s: { homework_id: string }) => s.homework_id));
-  const pending = ((homeworkRaw as Homework[] | null) ?? []).filter((h) => !submitted.has(h.id)).slice(0, 4);
+  const evals = (evalsRaw as { overall_band: number; result: { target_band?: number }; created_at: string }[] | null) ?? [];
 
   const streak = progress?.current_streak ?? 0;
-  const goal = progress?.daily_goal ?? profile.daily_goal ?? 20;
-  const completion = progress?.homework_completion ?? 0;
-  const weakest = progress?.weakest_skill ?? null;
+  const bestBand = evals.length ? Math.max(...evals.map((e) => Number(e.overall_band) || 0)) : null;
+  const latestTarget = evals[0]?.result?.target_band ?? (bestBand ? Math.min(bestBand + 0.5, 9) : null);
+
+  const now = Date.now();
+  const weekAgo = now - 7 * 864e5;
+  const todayStart = new Date(); todayStart.setUTCHours(0, 0, 0, 0);
+  const weekCount = evals.filter((e) => new Date(e.created_at).getTime() >= weekAgo).length;
+  const todayCount = evals.filter((e) => new Date(e.created_at).getTime() >= todayStart.getTime()).length;
+
+  const xp = evals.length * 20 + streak * 15;
+  const level = Math.floor(xp / 100) + 1;
+  const first = (profile.full_name || profile.email || "do‘st").split(/[ @]/)[0];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Your dashboard</h1>
-          <p className="text-sm text-muted">Keep your streak alive 🔥</p>
-        </div>
-        <LevelChip level={profile.level} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard icon={Flame} tone="amber" label="Day streak" value={`${streak}`} hint={`${streak} day streak`} />
-        <StatCard icon={Target} tone="teal" label="Daily goal" value={`${goal}m`} hint="Daily goal" />
-        <StatCard icon={ClipboardList} tone="primary" label="Homework done" value={`${completion}%`} hint="Homework done" />
-        <StatCard
-          icon={TrendingUp}
-          tone="danger"
-          label="Focus skill"
-          value={weakest ? SKILL_MAP[weakest].label : "—"}
-          hint="Weakest skill"
-        />
-      </div>
-
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold">Due homework</h2>
-          <Link href="/homework" className="text-sm font-medium text-primary-soft">
-            See all
-          </Link>
-        </div>
-        {pending.length === 0 ? (
-          <Card className="text-center text-sm text-muted">🎉 No pending homework. Great job!</Card>
-        ) : (
-          <div className="space-y-2">
-            {pending.map((h) => (
-              <Link
-                key={h.id}
-                href={`/homework/${h.id}`}
-                className="card flex items-center justify-between gap-3 p-3.5 transition hover:bg-elevated"
-              >
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{h.title}</div>
-                  <div className="text-xs text-muted">{relativeDue(h.due_at)}</div>
-                </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-subtle" />
-              </Link>
-            ))}
+    <div className="stagger space-y-5">
+      {/* Hero */}
+      <section className="card relative overflow-hidden p-5">
+        <span className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary-soft/10 blur-3xl" />
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm text-muted">{greeting()}</p>
+            <h1 className="truncate text-2xl font-extrabold tracking-tight">{first} 👋</h1>
+            <p className="mt-2 text-sm text-muted">
+              {streak > 0 ? (
+                <>Streakni o‘chirma — <span className="font-semibold text-amber">{streak} kun</span> 🔥</>
+              ) : (
+                <>Bugun bitta mashq bilan streakni boshla 🔥</>
+              )}
+            </p>
           </div>
-        )}
+          <BandRing band={bestBand} target={latestTarget} size={148} />
+        </div>
       </section>
 
-      <section>
-        <h2 className="mb-2 font-semibold">AI tools ✨</h2>
-        <Link
-          href="/teacher"
-          className="card mb-3 flex items-center gap-3 bg-gradient-to-br from-primary/25 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
-        >
-          <span className="text-3xl">👨‍🏫</span>
-          <div className="flex-1">
-            <div className="font-semibold">AI Teacher</div>
-            <div className="text-xs text-muted">Ask anything — it explains for your level</div>
-          </div>
-        </Link>
-        <div className="mb-3 grid grid-cols-2 gap-3">
-          <Link
-            href="/exercises"
-            className="card flex flex-col gap-1 bg-gradient-to-br from-amber/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
-          >
-            <span className="text-2xl">🧠</span>
-            <span className="font-semibold">AI Practice</span>
-            <span className="text-xs text-muted">Endless graded exercises</span>
-          </Link>
-          <Link
-            href="/vocab"
-            className="card flex flex-col gap-1 bg-gradient-to-br from-teal/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
-          >
-            <span className="text-2xl">📇</span>
-            <span className="font-semibold">Vocabulary</span>
-            <span className="text-xs text-muted">Daily flashcards (SRS)</span>
-          </Link>
+      {/* Gamified stats */}
+      <section className="grid grid-cols-3 gap-3">
+        <StatPill icon={Flame} tone="amber" value={streak} label="kun streak" />
+        <StatPill icon={Trophy} tone="teal" value={bestBand ? bestBand.toFixed(1) : "—"} label="eng yaxshi band" />
+        <StatPill icon={Zap} tone="indigo" value={xp} label={`Daraja ${level}`} />
+      </section>
+
+      {/* Daily goal */}
+      <section className="card space-y-3 p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <CalendarCheck className="h-4 w-4 text-primary-soft" /> Bugungi maqsad
         </div>
+        <XpBar value={todayCount} max={3} label="3 ta mashq bajaring" />
+        <p className="text-xs text-subtle">
+          Bu hafta: <span className="font-semibold text-fg">{weekCount}</span> mashq · davom eting!
+        </p>
+      </section>
+
+      {/* AI examiners — the stars */}
+      <section className="space-y-3">
+        <h2 className="px-1 text-sm font-semibold text-muted">AI imtihonchilar ✨</h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/writing"
-            className="card flex flex-col gap-1 bg-gradient-to-br from-primary/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
-          >
-            <span className="text-2xl">✍️</span>
-            <span className="font-semibold">Writing check</span>
-            <span className="text-xs text-muted">Instant band + feedback</span>
+          <Link href="/writing" className="block">
+            <ActionTile emoji="✍️" title="Writing" subtitle="Tezkor band + tahlil" from="primary" />
           </Link>
-          <Link
-            href="/speaking"
-            className="card flex flex-col gap-1 bg-gradient-to-br from-teal/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
-          >
-            <span className="text-2xl">🎙️</span>
-            <span className="font-semibold">Speaking examiner</span>
-            <span className="text-xs text-muted">Talk, get a band score</span>
+          <Link href="/speaking" className="block">
+            <ActionTile emoji="🎙️" title="Speaking" subtitle="Gapiring, band oling" from="indigo" />
+          </Link>
+          <Link href="/vocab" className="block">
+            <ActionTile emoji="📇" title="Lug‘at" subtitle="SRS + AI tarjimon" from="teal" />
+          </Link>
+          <Link href="/exercises" className="block">
+            <ActionTile emoji="🧠" title="AI Mashq" subtitle="Cheksiz savollar" from="amber" />
           </Link>
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-2 font-semibold">Jump back in</h2>
-        <div className="grid gap-2">
-          <LinkCard href="/skills" icon={BookOpen} title="Skills" description="Listening · Reading · Writing · Speaking" tone="primary" />
-          <LinkCard href="/practice" icon={Dumbbell} title="Practice Lab" description="Shadowing & typing trainer" tone="teal" />
-          <LinkCard href="/ranking" icon={Trophy} title="Ranking" description="See where you stand" tone="amber" />
-          <LinkCard href="/progress" icon={TrendingUp} title="My progress" description="Scores, streak & weak spots" tone="danger" />
-          <LinkCard href="/placement" icon={Compass} title="Placement test" description="Find your level" tone="primary" />
+      {/* AI tutor banner */}
+      <Link
+        href="/teacher"
+        className="card-i flex items-center gap-3 overflow-hidden p-4"
+      >
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft/15 text-xl">🤖</span>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold">Maga — AI ustoz</div>
+          <div className="text-xs text-muted">Istalgan savol — darajangizga moslab tushuntiradi</div>
         </div>
-      </section>
+        <ArrowRight className="h-4 w-4 shrink-0 text-primary-soft" />
+      </Link>
+
+      {/* Mock test teaser (Pro) */}
+      <div className="card flex items-center gap-3 border-dashed p-4 opacity-90">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface text-xl">📝</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 font-bold">
+            Full Mock Test
+            <span className="chip bg-amber/15 text-amber">
+              <Sparkles className="h-3 w-3" /> Pro
+            </span>
+          </div>
+          <div className="text-xs text-muted">4 bo‘lim + taymer + umumiy band — tez kunda</div>
+        </div>
+        <Lock className="h-4 w-4 shrink-0 text-subtle" />
+      </div>
     </div>
   );
 }

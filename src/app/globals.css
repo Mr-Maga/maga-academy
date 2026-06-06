@@ -1,45 +1,81 @@
 @import "tailwindcss";
 
 /*
-  Maga Academy — dark, purple-first design system.
-  Tailwind v4: design tokens live in @theme and become utilities
+  Maga Academy — "Aurora" premium dark design system.
+  Deep navy canvas + teal/aqua brand, indigo & gold accents.
+  Tailwind v4: tokens in @theme become utilities
   (e.g. --color-primary -> bg-primary / text-primary / border-primary).
 */
 @theme {
-  /* Surfaces (dark, purple-tinted) */
-  --color-bg: #0c0a15;
-  --color-surface: #141128;
-  --color-card: #1a1630;
-  --color-elevated: #221d3d;
-  --color-border: #2c2748;
-  --color-input: #1e1a36;
+  /* Surfaces — layered deep navy */
+  --color-bg: #060911;
+  --color-surface: #0b1120;
+  --color-card: #0f1828;
+  --color-elevated: #16233b;
+  --color-border: #1d2c47;
+  --color-input: #0d1626;
 
-  /* Text */
-  --color-fg: #eceaf6;
-  --color-muted: #a09bbc;
-  --color-subtle: #6e6890;
+  /* Text — cool, crisp */
+  --color-fg: #eef3fb;
+  --color-muted: #9aabc7;
+  --color-subtle: #5d6f8f;
 
-  /* Brand */
-  --color-primary: #534ab7;
+  /* Brand — teal / aqua */
+  --color-primary: #0d9488;
   --color-primary-fg: #ffffff;
-  --color-primary-soft: #8079e0;
-  --color-amber: #ef9f27;
-  --color-teal: #1d9e75;
-  --color-danger: #e24b4a;
+  --color-primary-soft: #2dd4bf;
+
+  /* Accents */
+  --color-amber: #fbbf24;
+  --color-teal: #2dd4bf;
+  --color-indigo: #818cf8;
+  --color-rose: #fb7185;
+  --color-danger: #f87171;
 
   /* Level accents (6 CEFR-style levels) */
-  --color-level-a1: #1d9e75;
-  --color-level-a2: #2bb6a4;
-  --color-level-b1: #3f8fd8;
-  --color-level-b2: #8079e0;
-  --color-level-cefr: #ef9f27;
-  --color-level-ielts: #e24b4a;
+  --color-level-a1: #34d399;
+  --color-level-a2: #2dd4bf;
+  --color-level-b1: #38bdf8;
+  --color-level-b2: #818cf8;
+  --color-level-cefr: #fbbf24;
+  --color-level-ielts: #fb7185;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
+
+  /* Motion */
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-flame: flame 1.6s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes flame {
+  0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+  50% { transform: scale(1.12) rotate(2deg); opacity: 0.92; }
+}
+@keyframes ring-draw {
+  from { stroke-dashoffset: var(--ring-circ); }
 }
 
 :root {
@@ -54,12 +90,14 @@ body {
   background-color: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans);
-  /* subtle depth from the purple brand */
+  /* Aurora glow: teal top-right, indigo left, warm bottom */
   background-image:
-    radial-gradient(60rem 40rem at 100% -10%, rgba(83, 74, 183, 0.18), transparent 60%),
-    radial-gradient(50rem 40rem at -10% 0%, rgba(239, 159, 39, 0.06), transparent 55%);
+    radial-gradient(48rem 36rem at 108% -8%, rgba(45, 212, 191, 0.16), transparent 60%),
+    radial-gradient(42rem 38rem at -12% 4%, rgba(129, 140, 248, 0.12), transparent 58%),
+    radial-gradient(50rem 40rem at 50% 120%, rgba(13, 148, 136, 0.08), transparent 60%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Slim, on-brand scrollbar */
@@ -76,29 +114,67 @@ body {
   border-radius: 9999px;
 }
 
-/* Reusable component classes (kept small; most styling is utility-first) */
 @layer components {
   .card {
-    @apply rounded-2xl border border-border bg-card/80 backdrop-blur-sm;
+    @apply rounded-2xl border border-border bg-card/85 backdrop-blur-sm;
+  }
+  /* Interactive card: lifts + glows teal on hover */
+  .card-i {
+    @apply rounded-2xl border border-border bg-card/85 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary-soft/40 active:scale-[0.99];
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
   }
-  /* Tailwind v4: @apply can't reference other custom classes, so the base
+  /* Tailwind v4: @apply can't reference other custom classes, so base
      button utilities are repeated in each variant. */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-fg hover:bg-primary/90;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 text-primary-fg;
+    background-image: linear-gradient(135deg, #0d9488, #14b8a6 55%, #2dd4bf);
+    box-shadow: 0 8px 24px -8px rgba(13, 148, 136, 0.6);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 10px 30px -8px rgba(45, 212, 191, 0.7);
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 border border-border bg-surface text-fg hover:bg-elevated;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 border border-border bg-surface text-fg hover:bg-elevated hover:border-primary-soft/30;
   }
   .input {
-    @apply w-full rounded-xl border border-border bg-input px-4 py-3 text-fg placeholder:text-subtle outline-none transition focus:border-primary-soft focus:ring-2 focus:ring-primary/30;
+    @apply w-full rounded-xl border border-border bg-input px-4 py-3 text-fg placeholder:text-subtle outline-none transition focus:border-primary-soft focus:ring-2 focus:ring-primary-soft/25;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-muted;
   }
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+  /* Soft brand gradient text for hero numbers/titles */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(120deg, #2dd4bf, #5eead4 40%, #818cf8);
+  }
+}
+
+/* Animated XP / progress fill with moving sheen */
+.bar-fill {
+  background-image: linear-gradient(90deg, #0d9488, #2dd4bf 50%, #5eead4);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Stagger helper for entrance animations */
+.stagger > * {
+  animation: var(--animate-fade-up);
+}
+.stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger > *:nth-child(6) { animation-delay: 0.25s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

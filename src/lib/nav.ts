@@ -1,14 +1,16 @@
 import {
   LayoutDashboard,
-  BookOpen,
   ClipboardList,
   Trophy,
-  Dumbbell,
   Users,
   FolderOpen,
   MessageSquare,
   TrendingUp,
   Settings2,
+  PenLine,
+  Mic,
+  Library,
+  Brain,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "./types";
@@ -22,11 +24,11 @@ export interface NavItem {
 // Bottom-nav items per role (kept to ≤5 for a clean mobile bar).
 export const NAV: Record<Role, NavItem[]> = {
   student: [
-    { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-    { href: "/skills", label: "Skills", icon: BookOpen },
-    { href: "/homework", label: "Homework", icon: ClipboardList },
-    { href: "/practice", label: "Practice", icon: Dumbbell },
-    { href: "/ranking", label: "Ranking", icon: Trophy },
+    { href: "/dashboard", label: "Asosiy", icon: LayoutDashboard },
+    { href: "/writing", label: "Writing", icon: PenLine },
+    { href: "/speaking", label: "Speaking", icon: Mic },
+    { href: "/vocab", label: "Lug‘at", icon: Library },
+    { href: "/exercises", label: "Mashq", icon: Brain },
   ],
   parent: [
     { href: "/dashboard", label: "Home", icon: LayoutDashboard },
