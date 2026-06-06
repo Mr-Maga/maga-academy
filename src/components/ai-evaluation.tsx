@@ -29,6 +29,13 @@ export function AiEvaluationView({ ev }: { ev: AiEvaluation }) {
         </div>
       </Card>
 
+      {ev.transcript && (
+        <Card>
+          <h3 className="mb-1.5 text-sm font-semibold text-muted">🎧 AI eshitgan matn</h3>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg/90">{ev.transcript}</p>
+        </Card>
+      )}
+
       <Card>
         <h3 className="mb-3 font-semibold">Criteria</h3>
         <div className="space-y-3">

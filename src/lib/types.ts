@@ -182,6 +182,7 @@ export interface BandCriterion {
 export interface AiEvaluation {
   overall_band: number;
   band_note?: string;
+  transcript?: string; // speaking: what the AI heard
   criteria: BandCriterion[];
   strengths: string[];
   improvements: string[];

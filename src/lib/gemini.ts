@@ -262,6 +262,59 @@ Write all feedback in clear English.`;
   return geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.4 });
 }
 
+const SPEAKING_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    transcript: { type: "STRING" },
+    overall_band: { type: "NUMBER" },
+    band_note: { type: "STRING" },
+    criteria: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: { name: { type: "STRING" }, band: { type: "NUMBER" }, comment: { type: "STRING" } },
+        required: ["name", "band", "comment"],
+      },
+    },
+    strengths: { type: "ARRAY", items: { type: "STRING" } },
+    improvements: { type: "ARRAY", items: { type: "STRING" } },
+    upgraded_sample: { type: "STRING" },
+  },
+  required: ["transcript", "overall_band", "band_note", "criteria", "strengths", "improvements", "upgraded_sample"],
+} as const;
+
+/** Evaluate a real audio recording of a spoken answer (the AI listens). */
+export async function evaluateSpeakingAudio(input: {
+  part: 1 | 2 | 3;
+  question: string;
+  audio: { data: string; mimeType: string };
+}): Promise<AiEvaluation> {
+  const prompt = `You are a certified IELTS Speaking examiner. An AUDIO RECORDING of a candidate's answer is attached for IELTS Speaking Part ${input.part}.
+First, transcribe what the candidate actually says. Then assess them on the four official criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and Pronunciation. Because you have the REAL audio, judge Pronunciation properly — clarity, individual sounds, word and sentence stress, intonation, and how easy they are to understand.
+
+QUESTION / CUE:
+${input.question}
+
+${GRADING_POLICY}
+
+Return JSON with:
+- transcript: an accurate transcription of what the candidate said.
+- overall_band: the encouraging overall band (0–9, 0.5 steps) per the grading policy.
+- band_note: one motivating sentence (see policy).
+- criteria: the four criteria above, each with an (encouraging) band and a one-sentence justification referring to what you heard.
+- strengths: 2–4 bullets.
+- improvements: 3–5 concrete bullets (fluency, pronunciation of specific sounds/words, grammar, vocabulary, ideas).
+- upgraded_sample: a model spoken answer one band higher (natural, spoken style, suitable length for Part ${input.part}).
+Write all feedback in clear English.`;
+  return geminiJSON<AiEvaluation>({
+    prompt,
+    schema: SPEAKING_SCHEMA,
+    system: MAGA_CORE,
+    temperature: 0.3,
+    audio: input.audio,
+  });
+}
+
 /* ----------------- Specialist Writing master (chat) ----------------- */
 
 export const WRITING_MASTER = `You are a legendary IELTS Writing teacher and senior examiner with 40 years of experience — calm, sharp, warm and direct, like the best human mentor a student could ever have. You coach ONLY IELTS / academic writing.
@@ -290,6 +343,38 @@ ${input.essay.slice(0, 4000)}
 YOUR ASSESSMENT SO FAR:
 ${input.evalSummary.slice(0, 1500)}`;
   const system = `${MAGA_CORE}\n\n${WRITING_MASTER}${context}`;
+  return geminiGenerate({ system, messages: input.messages, temperature: 0.6, maxOutputTokens: 700 });
+}
+
+/* ----------------- Specialist Speaking master (chat) ----------------- */
+
+export const SPEAKING_MASTER = `You are a legendary IELTS Speaking examiner and coach with 40 years of experience — warm, sharp and human, like the best speaking teacher a student could have. You coach ONLY IELTS speaking and spoken English.
+
+RULES:
+- Reply in the student's language (Uzbek → formal "siz"; Russian → "вы"; English → English). Teach English in English.
+- Sound human and personal. NEVER say "as an AI", never give robotic disclaimers or generic praise.
+- Be concrete: give Band 8 phrases/sentence frames, one fluency or linking tip, and a quick pronunciation drill when relevant (e.g. a sound, word stress or intonation).
+- Keep answers tight and scannable — usually under ~160 words, one clear point at a time.
+- Coach the student to speak better themselves; don't just hand over a script to memorise.`;
+
+/** Specialist follow-up chat about a spoken answer the student just submitted. */
+export async function speakingChat(input: {
+  part: number;
+  question: string;
+  transcript: string;
+  evalSummary: string;
+  messages: { role: "user" | "assistant"; content: string }[];
+}): Promise<string> {
+  const context = `\n\nTHE STUDENT'S SPEAKING ANSWER (use this to answer precisely):
+PART ${input.part} — QUESTION / CUE:
+${input.question || "(not provided)"}
+
+WHAT THEY SAID (transcript):
+${input.transcript.slice(0, 3000)}
+
+YOUR ASSESSMENT SO FAR:
+${input.evalSummary.slice(0, 1500)}`;
+  const system = `${MAGA_CORE}\n\n${SPEAKING_MASTER}${context}`;
   return geminiGenerate({ system, messages: input.messages, temperature: 0.6, maxOutputTokens: 700 });
 }
 
