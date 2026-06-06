@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { geminiConfigured, geminiGenerate, buildTutorSystem, type TutorContext } from "@/lib/gemini";
 import { academyInfoForPrompt } from "@/lib/academy";
+import { getAcademyInfo } from "@/lib/settings";
 import { levelLabel, SKILL_MAP, ROLE_LABELS } from "@/lib/constants";
 import type { LevelKey, Role, Skill, StudentProgress } from "@/lib/types";
 
@@ -68,12 +69,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const system = buildTutorSystem(ctx, academyInfoForPrompt());
+    const academy = await getAcademyInfo();
+    const system = buildTutorSystem(ctx, academyInfoForPrompt(academy));
     const reply = await geminiGenerate({ system, messages: safe });
     return NextResponse.json({ reply });
-  } catch {
+  } catch (e) {
+    const quota = e instanceof Error && e.message === "QUOTA";
     return NextResponse.json({
-      reply: "Kechirasiz, hozir javob bera olmadim. Birozdan keyin yana urinib ko‘ring.",
+      reply: quota
+        ? "Hozir AI biroz band (bepul limit to‘ldi). Bir daqiqadan keyin yana urinib ko‘ring 🙏"
+        : "Kechirasiz, hozir javob bera olmadim. Birozdan keyin yana urinib ko‘ring.",
     });
   }
 }

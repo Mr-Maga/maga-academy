@@ -77,6 +77,34 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
 
       <section>
         <h2 className="mb-2 font-semibold">AI tools ✨</h2>
+        <Link
+          href="/teacher"
+          className="card mb-3 flex items-center gap-3 bg-gradient-to-br from-primary/25 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
+        >
+          <span className="text-3xl">👨‍🏫</span>
+          <div className="flex-1">
+            <div className="font-semibold">AI Teacher</div>
+            <div className="text-xs text-muted">Ask anything — it explains for your level</div>
+          </div>
+        </Link>
+        <div className="mb-3 grid grid-cols-2 gap-3">
+          <Link
+            href="/exercises"
+            className="card flex flex-col gap-1 bg-gradient-to-br from-amber/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
+          >
+            <span className="text-2xl">🧠</span>
+            <span className="font-semibold">AI Practice</span>
+            <span className="text-xs text-muted">Endless graded exercises</span>
+          </Link>
+          <Link
+            href="/vocab"
+            className="card flex flex-col gap-1 bg-gradient-to-br from-teal/20 to-transparent p-4 transition hover:bg-elevated active:scale-[0.98]"
+          >
+            <span className="text-2xl">📇</span>
+            <span className="font-semibold">Vocabulary</span>
+            <span className="text-xs text-muted">Daily flashcards (SRS)</span>
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/writing"

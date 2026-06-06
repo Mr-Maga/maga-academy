@@ -15,6 +15,14 @@ const GREETING: ChatMsg = {
     "Assalomu alaykum! Men Maga — sizning ingliz tili va IELTS yordamchingizman. Grammatika, lug‘at, yozuv yoki gapirish — nima kerak? (Uzbek / Русский / English)",
 };
 
+const QUICK_PROMPTS = [
+  { label: "📚 Vocabulary", text: "Teach me 5 useful IELTS words with example sentences." },
+  { label: "📝 Grammar", text: "Explain a grammar rule I often get wrong, with examples." },
+  { label: "🎯 My weak skill", text: "Based on my progress, what should I focus on to improve fastest?" },
+  { label: "🗣️ Speaking Q", text: "Ask me one IELTS Speaking Part 2 question, then wait for my answer." },
+  { label: "💰 Prices", text: "What are the course prices?" },
+];
+
 export function AiTutorLauncher() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([GREETING]);
@@ -26,8 +34,8 @@ export function AiTutorLauncher() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
 
-  async function send() {
-    const text = input.trim();
+  async function send(preset?: string) {
+    const text = (preset ?? input).trim();
     if (!text || loading) return;
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
@@ -120,6 +128,20 @@ export function AiTutorLauncher() {
                 </div>
               )}
             </div>
+
+            {messages.length === 1 && !loading && (
+              <div className="flex flex-wrap gap-2 px-4 pb-2">
+                {QUICK_PROMPTS.map((q) => (
+                  <button
+                    key={q.label}
+                    onClick={() => void send(q.text)}
+                    className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted transition hover:text-fg"
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="border-t border-border bg-surface p-3" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
               <div className="flex items-end gap-2">

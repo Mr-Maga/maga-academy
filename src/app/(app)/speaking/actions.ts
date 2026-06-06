@@ -2,6 +2,7 @@
 
 import { requireActiveProfile } from "@/lib/dal";
 import { geminiConfigured, evaluateSpeaking } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
 import type { AiEvaluation } from "@/lib/types";
 
 export type SpeakingCheckState = { error?: string; result?: AiEvaluation } | undefined;
@@ -10,7 +11,7 @@ export async function checkSpeaking(
   _prev: SpeakingCheckState,
   formData: FormData,
 ): Promise<SpeakingCheckState> {
-  await requireActiveProfile();
+  const profile = await requireActiveProfile();
   if (!geminiConfigured()) {
     return { error: "AI is not configured yet — ask the admin to add a Gemini key." };
   }
@@ -23,8 +24,26 @@ export async function checkSpeaking(
 
   try {
     const result = await evaluateSpeaking({ part, question, answer });
+
+    // Persist to DB
+    const supabase = await createClient();
+    await supabase.from("evaluations").insert({
+      student_id: profile.id,
+      kind: "speaking",
+      sub_type: `part${part}`,
+      question: question || null,
+      answer,
+      overall_band: result.overall_band,
+      result,
+    });
+
     return { result };
-  } catch {
-    return { error: "AI request failed. Please try again in a moment." };
+  } catch (e) {
+    return {
+      error:
+        e instanceof Error && e.message === "QUOTA"
+          ? "AI is busy (free limit reached). Please try again in a minute."
+          : "AI request failed. Please try again in a moment.",
+    };
   }
 }

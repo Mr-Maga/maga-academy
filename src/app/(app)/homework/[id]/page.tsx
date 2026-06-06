@@ -12,6 +12,7 @@ import type { Homework, Profile, Submission } from "@/lib/types";
 import { deleteHomework } from "../actions";
 import { SubmitForm } from "./submit-form";
 import { GradeForm } from "./grade-form";
+import { TeacherAiOpinion } from "./teacher-ai-opinion";
 
 export const metadata: Metadata = { title: "Homework" };
 
@@ -195,6 +196,7 @@ async function StaffView({ hw }: { hw: Homework }) {
                       maxScore={sub.max_score}
                       comment={sub.comment}
                     />
+                    {sub.body && <TeacherAiOpinion submissionId={sub.id} />}
                   </>
                 )}
               </Card>

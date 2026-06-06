@@ -20,6 +20,19 @@ export function FeedbackForm({ isParent }: { isParent: boolean }) {
           ? "Tell the centre about anything — it reaches the admin directly."
           : "How is the platform working for you? Share feedback or an idea — what should we add or improve?"}
       </p>
+      <select name="kind" defaultValue={isParent ? "complaint" : "feedback"} className="input" aria-label="Message type">
+        {isParent ? (
+          <>
+            <option value="complaint">Complaint / message</option>
+            <option value="suggestion">Suggestion for the app</option>
+          </>
+        ) : (
+          <>
+            <option value="feedback">Feedback</option>
+            <option value="suggestion">Suggestion for the app</option>
+          </>
+        )}
+      </select>
       <textarea
         name="message"
         rows={4}

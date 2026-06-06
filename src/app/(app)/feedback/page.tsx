@@ -15,16 +15,31 @@ export const metadata: Metadata = { title: "Feedback" };
 
 type Row = Feedback & { author: { full_name: string | null; email: string | null } | null };
 
-export default async function FeedbackPage() {
+const KIND_TABS = [
+  { key: "", label: "All" },
+  { key: "complaint", label: "Complaints" },
+  { key: "feedback", label: "Feedback" },
+  { key: "suggestion", label: "Suggestions" },
+] as const;
+
+export default async function FeedbackPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kind?: string }>;
+}) {
   const profile = await requireActiveProfile();
   const staff = isStaff(profile.role);
+  const { kind } = await searchParams;
+  const activeKind = staff && KIND_TABS.some((t) => t.key === kind) ? kind : "";
   const supabase = await createClient();
 
-  const { data } = await supabase
+  let query = supabase
     .from("feedback")
     .select("*, author:user_id(full_name, email)")
     .order("created_at", { ascending: false })
     .limit(staff ? 100 : 20);
+  if (activeKind) query = query.eq("kind", activeKind);
+  const { data } = await query;
   const rows = (data as Row[] | null) ?? [];
 
   if (!staff) {
@@ -57,6 +72,16 @@ export default async function FeedbackPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Complaints & feedback" subtitle={`${unhandled.length} new of ${rows.length} total`} />
+
+      <div className="flex flex-wrap gap-2">
+        {KIND_TABS.map((t) => (
+          <a key={t.key} href={t.key ? `/feedback?kind=${t.key}` : "/feedback"}>
+            <Badge tone={activeKind === t.key ? "primary" : "muted"} className={activeKind === t.key ? "ring-1 ring-primary-soft/50" : ""}>
+              {t.label}
+            </Badge>
+          </a>
+        ))}
+      </div>
 
       <FeedbackSummary />
 

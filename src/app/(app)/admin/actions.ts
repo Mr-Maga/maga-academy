@@ -148,3 +148,23 @@ export async function unlinkParent(formData: FormData) {
   if (linkId) await supabase.from("parent_links").delete().eq("id", linkId);
   refresh();
 }
+
+/** Edit academy info (name, about, contact, schedule, prices) — used by the AI
+ * tutor and shown to learners. */
+export async function updateAcademy(formData: FormData) {
+  const supabase = await adminGuard();
+  const data = {
+    name: String(formData.get("name") ?? "").trim() || "Maga Academy",
+    about: String(formData.get("about") ?? "").trim(),
+    contactTelegram: String(formData.get("contactTelegram") ?? "").trim(),
+    schedule: String(formData.get("schedule") ?? "").trim(),
+    prices: [
+      { plan: "IELTS", price: String(formData.get("price_ielts") ?? "").trim() },
+      { plan: "CEFR", price: String(formData.get("price_cefr") ?? "").trim() },
+      { plan: "General English (A1–B2)", price: String(formData.get("price_general") ?? "").trim() },
+    ],
+  };
+  await supabase.from("app_settings").update({ data, updated_at: new Date().toISOString() }).eq("id", 1);
+  revalidatePath("/admin/academy");
+  revalidatePath("/admin");
+}

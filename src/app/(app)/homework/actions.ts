@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, requireRole } from "@/lib/dal";
-import type { LevelKey, Skill } from "@/lib/types";
+import { geminiConfigured, evaluateWriting, evaluateSpeaking } from "@/lib/gemini";
+import type { AiEvaluation, LevelKey, Skill } from "@/lib/types";
 
 export type HwState = { error?: string } | undefined;
 
@@ -134,4 +135,45 @@ export async function gradeSubmission(_prev: HwState, formData: FormData): Promi
   revalidatePath(`/homework/${homeworkId}`);
   revalidatePath("/ranking");
   return undefined;
+}
+
+export type OpinionState = { error?: string; result?: AiEvaluation } | undefined;
+
+/** Staff: run an AI examiner pass on a submission to speed up grading. */
+export async function aiSecondOpinion(submissionId: string): Promise<OpinionState> {
+  await requireRole("admin", "teacher");
+  if (!geminiConfigured()) return { error: "AI is not configured yet (add GEMINI_API_KEY)." };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("submissions")
+    .select("body, homework:homework_id(title, description, skill)")
+    .eq("id", submissionId)
+    .maybeSingle();
+
+  const sub = data as {
+    body: string | null;
+    homework: { title: string; description: string | null; skill: Skill | null } | null;
+  } | null;
+
+  if (!sub?.body || sub.body.trim().length < 20) {
+    return { error: "This submission has no text answer to evaluate." };
+  }
+
+  const hw = sub.homework;
+  const question = [hw?.title, hw?.description].filter(Boolean).join(" — ");
+  try {
+    const result =
+      hw?.skill === "speaking"
+        ? await evaluateSpeaking({ part: 2, question, answer: sub.body })
+        : await evaluateWriting({ task: "task2", question, essay: sub.body });
+    return { result };
+  } catch (e) {
+    return {
+      error:
+        e instanceof Error && e.message === "QUOTA"
+          ? "AI is busy (free limit reached). Please try again in a minute."
+          : "AI request failed. Please try again.",
+    };
+  }
 }

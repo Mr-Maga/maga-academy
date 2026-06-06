@@ -18,6 +18,11 @@ export function SpeakingClient() {
 
   const recRef = useRef<any>(null);
   const finalRef = useRef("");
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [canRecord, setCanRecord] = useState(false);
 
   const topic = SPEAKING_TOPICS.find((t) => t.id === topicId) ?? SPEAKING_TOPICS[0];
   const question = questionForPart(topic, part);
@@ -25,39 +30,81 @@ export function SpeakingClient() {
   useEffect(() => {
     const w = window as any;
     setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+    setCanRecord(typeof w.MediaRecorder !== "undefined");
     return () => {
       try {
         recRef.current?.stop();
       } catch {}
+      try {
+        mediaRef.current?.stop();
+      } catch {}
+      streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
-  function toggleListening() {
+  async function toggleListening() {
     if (listening) {
-      recRef.current?.stop();
+      try {
+        recRef.current?.stop();
+      } catch {}
+      try {
+        mediaRef.current?.stop();
+      } catch {}
+      setListening(false);
       return;
     }
+
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+
+    // Record audio so the student can listen back.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => {
+        if (e.data.size) chunksRef.current.push(e.data);
+      };
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setAudioUrl(URL.createObjectURL(blob));
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      };
+      mr.start();
+      mediaRef.current = mr;
+    } catch {
+      return; // mic denied
+    }
+
+    // Live transcription (if the browser supports it).
     const w = window as any;
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SR) return;
-    const rec = new SR();
-    rec.lang = "en-US";
-    rec.continuous = true;
-    rec.interimResults = true;
-    finalRef.current = answer ? answer + " " : "";
-    rec.onresult = (e: any) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalRef.current += t + " ";
-        else interim += t;
-      }
-      setAnswer((finalRef.current + interim).replace(/\s+/g, " ").trimStart());
-    };
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
-    rec.start();
-    recRef.current = rec;
+    if (SR) {
+      const rec = new SR();
+      rec.lang = "en-US";
+      rec.continuous = true;
+      rec.interimResults = true;
+      finalRef.current = answer ? answer + " " : "";
+      rec.onresult = (e: any) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) finalRef.current += t + " ";
+          else interim += t;
+        }
+        setAnswer((finalRef.current + interim).replace(/\s+/g, " ").trimStart());
+      };
+      rec.onerror = () => {};
+      recRef.current = rec;
+      try {
+        rec.start();
+      } catch {}
+    }
+
     setListening(true);
   }
 
@@ -126,10 +173,10 @@ export function SpeakingClient() {
           <span className="text-xs text-subtle">{words} words</span>
         </div>
 
-        {supported && (
+        {canRecord && (
           <button
             type="button"
-            onClick={toggleListening}
+            onClick={() => void toggleListening()}
             className={cn(
               "btn w-full py-3",
               listening ? "bg-danger text-white" : "bg-primary text-primary-fg",
@@ -141,15 +188,19 @@ export function SpeakingClient() {
               </>
             ) : (
               <>
-                <Mic className="h-5 w-5" /> Record &amp; transcribe
+                <Mic className="h-5 w-5" /> {supported ? "Record & transcribe" : "Record audio"}
               </>
             )}
           </button>
         )}
-        {!supported && (
+        {canRecord && !supported && (
           <p className="text-xs text-amber">
-            Voice typing isn’t supported in this browser — please type your answer (Chrome supports voice).
+            Live voice-typing isn’t supported here, but your audio is recorded so you can listen back —
+            please type your answer (Chrome supports voice typing).
           </p>
+        )}
+        {!canRecord && (
+          <p className="text-xs text-amber">Recording isn’t supported in this browser — please type your answer.</p>
         )}
 
         <textarea
@@ -161,6 +212,13 @@ export function SpeakingClient() {
           className="input"
           placeholder="Your spoken answer appears here as you talk — you can edit it too."
         />
+
+        {audioUrl && (
+          <div>
+            <div className="mb-1 text-xs text-muted">🎧 Listen back to your answer:</div>
+            <audio src={audioUrl} controls className="w-full" />
+          </div>
+        )}
 
         <div className="flex gap-2">
           {answer && (

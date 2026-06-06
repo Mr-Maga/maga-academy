@@ -1,10 +1,21 @@
-import { FileDown, Video, Trash2 } from "lucide-react";
+import { FileDown, Video, Trash2, Headphones } from "lucide-react";
 import { Badge, LevelChip } from "@/components/ui";
 import { SubmitButton } from "@/components/form-controls";
 import { SKILL_MAP } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import type { Material } from "@/lib/types";
 import { deleteMaterial } from "@/app/(app)/materials/actions";
+
+const AUDIO_EXT = ["mp3", "m4a", "wav", "ogg", "oga", "aac", "opus", "weba"];
+const VIDEO_EXT = ["mp4", "webm", "mov", "m4v", "ogv"];
+
+function mediaKind(path?: string | null): "audio" | "video" | "file" {
+  if (!path) return "file";
+  const ext = path.split(".").pop()?.toLowerCase() ?? "";
+  if (AUDIO_EXT.includes(ext)) return "audio";
+  if (VIDEO_EXT.includes(ext)) return "video";
+  return "file";
+}
 
 export function MaterialItem({
   material,
@@ -17,6 +28,7 @@ export function MaterialItem({
   canManage?: boolean;
   showLevel?: boolean;
 }) {
+  const kind = mediaKind(material.file_path);
   return (
     <div className="card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -41,10 +53,25 @@ export function MaterialItem({
         <span className="text-subtle">{formatDate(material.created_at)}</span>
       </div>
 
+      {/* Inline players — content stays on this site, no redirect */}
+      {fileUrl && kind === "audio" && (
+        <div className="mt-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-teal">
+            <Headphones className="h-4 w-4" /> Listen here
+          </div>
+          <audio controls preload="none" src={fileUrl} className="w-full" />
+        </div>
+      )}
+      {fileUrl && kind === "video" && (
+        <div className="mt-3">
+          <video controls preload="none" src={fileUrl} className="w-full rounded-lg bg-black" />
+        </div>
+      )}
+
       <div className="mt-3 flex flex-wrap gap-2">
         {fileUrl && (
           <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost px-3 py-2 text-sm">
-            <FileDown className="h-4 w-4" /> Download
+            <FileDown className="h-4 w-4" /> {kind === "file" ? "Download" : "Save / download"}
           </a>
         )}
         {material.video_url && (

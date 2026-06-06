@@ -10,7 +10,19 @@ export type Skill = "listening" | "reading" | "writing" | "speaking";
 
 export type AccessStatus = "pending" | "active" | "locked";
 
-export type FeedbackKind = "complaint" | "feedback" | "placement" | "system";
+export type FeedbackKind = "complaint" | "feedback" | "placement" | "system" | "suggestion";
+
+export interface AcademyPrice {
+  plan: string;
+  price: string;
+}
+export interface AcademyInfo {
+  name: string;
+  about: string;
+  contactTelegram: string;
+  schedule: string;
+  prices: AcademyPrice[];
+}
 
 export type FeedbackSource = "telegram" | "web";
 
@@ -147,6 +159,20 @@ export interface StudentProgress {
   daily_goal: number;
 }
 
+export type EvalKind = "writing" | "speaking";
+
+export interface AiEvaluationRecord {
+  id: string;
+  student_id: string;
+  kind: EvalKind;
+  sub_type: string | null;
+  question: string | null;
+  answer: string | null;
+  overall_band: number;
+  result: AiEvaluation;
+  created_at: string;
+}
+
 // AI examiner (Writing / Speaking) evaluation shape.
 export interface BandCriterion {
   name: string;
@@ -159,4 +185,56 @@ export interface AiEvaluation {
   strengths: string[];
   improvements: string[];
   upgraded_sample: string;
+}
+
+// Vocabulary flashcards (spaced repetition)
+export interface VocabCard {
+  id: string;
+  word: string;
+  meaning: string;
+  example: string | null;
+  translation: string | null;
+  level: LevelKey | null;
+}
+export interface VocabStats {
+  due: number;
+  newCount: number;
+  learning: number;
+  known: number;
+  hard: number;
+}
+export interface VocabSet {
+  id: string;
+  name: string;
+  count: number;
+}
+export interface VocabTranslation {
+  word: string;
+  translation: string;
+  translation_ru?: string;
+  meaning: string;
+  example: string;
+  level?: string;
+  source?: string;
+}
+export interface VocabLookup {
+  id: string;
+  query: string;
+  added: boolean;
+  result: VocabTranslation;
+  created_at: string;
+}
+
+// AI-generated practice exercises
+export type ExerciseType = "reading" | "grammar" | "vocabulary";
+export interface ExerciseQuestion {
+  prompt: string;
+  options: string[];
+  answer_index: number;
+  explanation: string;
+}
+export interface Exercise {
+  title: string;
+  passage?: string;
+  questions: ExerciseQuestion[];
 }

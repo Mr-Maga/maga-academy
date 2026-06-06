@@ -17,8 +17,13 @@ export async function submitFeedback(_prev: FeedbackState, formData: FormData): 
   const message = String(formData.get("message") ?? "").trim();
   if (message.length < 3) return { error: "Please write a longer message." };
 
-  // Parents file complaints; students send platform feedback.
-  const kind: FeedbackKind = profile.role === "parent" ? "complaint" : "feedback";
+  // Parents file complaints; students send platform feedback. Either can send a
+  // product suggestion.
+  const requested = String(formData.get("kind") ?? "");
+  const allowed: FeedbackKind[] = profile.role === "parent" ? ["complaint", "suggestion"] : ["feedback", "suggestion"];
+  const kind: FeedbackKind = (allowed as string[]).includes(requested)
+    ? (requested as FeedbackKind)
+    : allowed[0];
 
   const supabase = await createClient();
   const { error } = await supabase.from("feedback").insert({

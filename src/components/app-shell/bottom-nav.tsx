@@ -6,7 +6,7 @@ import { NAV, activeHref } from "@/lib/nav";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function BottomNav({ role }: { role: Role }) {
+export function BottomNav({ role, badges = {} }: { role: Role; badges?: Record<string, number> }) {
   const pathname = usePathname();
   const items = NAV[role];
   const active = activeHref(pathname, items);
@@ -20,6 +20,7 @@ export function BottomNav({ role }: { role: Role }) {
         {items.map((item) => {
           const isActive = active === item.href;
           const Icon = item.icon;
+          const count = badges[item.href] ?? 0;
           return (
             <Link
               key={item.href}
@@ -32,7 +33,14 @@ export function BottomNav({ role }: { role: Role }) {
               {isActive && (
                 <span className="absolute top-0 h-0.5 w-8 rounded-full bg-primary-soft" />
               )}
-              <Icon className="h-[22px] w-[22px]" strokeWidth={isActive ? 2.4 : 2} />
+              <span className="relative">
+                <Icon className="h-[22px] w-[22px]" strokeWidth={isActive ? 2.4 : 2} />
+                {count > 0 && (
+                  <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
+                    {count > 9 ? "9+" : count}
+                  </span>
+                )}
+              </span>
               <span>{item.label}</span>
             </Link>
           );

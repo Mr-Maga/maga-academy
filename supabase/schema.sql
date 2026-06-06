@@ -24,6 +24,9 @@ do $$ begin create type public.feedback_kind as enum ('complaint','feedback','pl
 do $$ begin create type public.feedback_source as enum ('telegram','web'); exception when duplicate_object then null; end $$;
 do $$ begin create type public.submission_status as enum ('submitted','graded'); exception when duplicate_object then null; end $$;
 
+-- add 'suggestion' to feedback_kind (covers databases created before this value existed)
+alter type public.feedback_kind add value if not exists 'suggestion';
+
 -- ----------------------------------------------------------------------------
 -- Tables
 -- ----------------------------------------------------------------------------
@@ -139,6 +142,33 @@ create table if not exists public.feedback (
   created_at timestamptz not null default now()
 );
 
+-- evaluations (AI Writing + Speaking history)
+do $$ begin
+  create type public.eval_kind as enum ('writing', 'speaking');
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.evaluations (
+  id            uuid primary key default gen_random_uuid(),
+  student_id    uuid not null references public.profiles(id) on delete cascade,
+  kind          public.eval_kind not null,
+  sub_type      text,
+  question      text,
+  answer        text,
+  overall_band  numeric(3,1) not null,
+  result        jsonb not null,
+  created_at    timestamptz not null default now()
+);
+
+-- app settings: a single editable row holding academy info (prices, schedule,
+-- contact) so the admin can change it in-app without editing code.
+create table if not exists public.app_settings (
+  id int primary key default 1,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  constraint app_settings_single_row check (id = 1)
+);
+insert into public.app_settings (id, data) values (1, '{}'::jsonb) on conflict (id) do nothing;
+
 create index if not exists idx_profiles_role on public.profiles(role);
 create index if not exists idx_profiles_group on public.profiles(group_id);
 create index if not exists idx_profiles_level on public.profiles(level);
@@ -149,6 +179,7 @@ create index if not exists idx_scores_student on public.scores(student_id);
 create index if not exists idx_parent_links_parent on public.parent_links(parent_id);
 create index if not exists idx_parent_links_student on public.parent_links(student_id);
 create index if not exists idx_feedback_kind_created on public.feedback(kind, created_at desc);
+create index if not exists idx_evaluations_student_kind on public.evaluations(student_id, kind, created_at desc);
 
 -- ----------------------------------------------------------------------------
 -- SECURITY DEFINER helpers (used inside RLS — they bypass RLS on profiles, so
@@ -477,6 +508,8 @@ alter table public.scores        enable row level security;
 alter table public.parent_links  enable row level security;
 alter table public.streaks       enable row level security;
 alter table public.feedback      enable row level security;
+alter table public.evaluations   enable row level security;
+alter table public.app_settings  enable row level security;
 
 -- profiles
 drop policy if exists profiles_select on public.profiles;
@@ -601,6 +634,125 @@ drop policy if exists feedback_select on public.feedback;
 create policy feedback_select on public.feedback for select using (public.is_staff() or user_id = auth.uid());
 drop policy if exists feedback_update_staff on public.feedback;
 create policy feedback_update_staff on public.feedback for update using (public.is_staff()) with check (public.is_staff());
+
+-- evaluations (AI Writing/Speaking history): a student sees their own; staff see
+-- all; a parent sees their linked child's. Students insert their own only.
+drop policy if exists evaluations_select on public.evaluations;
+create policy evaluations_select on public.evaluations for select using (
+  student_id = auth.uid()
+  or public.is_staff()
+  or exists (select 1 from public.parent_links pl where pl.parent_id = auth.uid() and pl.student_id = evaluations.student_id)
+);
+drop policy if exists evaluations_insert_own on public.evaluations;
+create policy evaluations_insert_own on public.evaluations for insert with check (
+  student_id = auth.uid() and public.has_active_access()
+);
+drop policy if exists evaluations_delete on public.evaluations;
+create policy evaluations_delete on public.evaluations for delete using (
+  student_id = auth.uid() or public.is_staff()
+);
+
+-- app_settings: anyone signed in can read; only admins can change.
+drop policy if exists app_settings_select on public.app_settings;
+create policy app_settings_select on public.app_settings for select using (true);
+drop policy if exists app_settings_update_admin on public.app_settings;
+create policy app_settings_update_admin on public.app_settings for update using (public.is_admin()) with check (public.is_admin());
+
+-- ----------------------------------------------------------------------------
+-- Vocabulary flashcards + spaced-repetition progress
+-- ----------------------------------------------------------------------------
+create table if not exists public.vocab_cards (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references public.profiles(id) on delete cascade, -- null = curated/global deck
+  word text not null,
+  meaning text not null,
+  example text,
+  translation text,
+  level public.level_key,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.vocab_progress (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  card_id uuid not null references public.vocab_cards(id) on delete cascade,
+  box int not null default 0,            -- Leitner box 0..5 -> intervals 1,2,4,8,16,30 days
+  due_at date not null default current_date,
+  ease int not null default 0,
+  wrong_count int not null default 0,    -- times marked "didn't know"
+  status text not null default 'new',    -- new | learning | known | hard
+  last_reviewed_at timestamptz,
+  unique (student_id, card_id)
+);
+
+create index if not exists idx_vocab_cards_owner on public.vocab_cards(owner_id);
+create index if not exists idx_vocab_cards_level on public.vocab_cards(level);
+create index if not exists idx_vocab_progress_due on public.vocab_progress(student_id, due_at);
+create index if not exists idx_vocab_progress_hard on public.vocab_progress(student_id, wrong_count);
+
+alter table public.vocab_cards enable row level security;
+alter table public.vocab_progress enable row level security;
+
+drop policy if exists vocab_cards_select on public.vocab_cards;
+create policy vocab_cards_select on public.vocab_cards for select using (
+  owner_id is null or owner_id = auth.uid() or public.is_staff()
+);
+drop policy if exists vocab_cards_insert on public.vocab_cards;
+create policy vocab_cards_insert on public.vocab_cards for insert with check (
+  owner_id = auth.uid() or public.is_staff()
+);
+drop policy if exists vocab_cards_delete on public.vocab_cards;
+create policy vocab_cards_delete on public.vocab_cards for delete using (
+  owner_id = auth.uid() or public.is_admin()
+);
+
+drop policy if exists vocab_progress_select on public.vocab_progress;
+create policy vocab_progress_select on public.vocab_progress for select using (
+  student_id = auth.uid() or public.is_staff()
+);
+drop policy if exists vocab_progress_insert on public.vocab_progress;
+create policy vocab_progress_insert on public.vocab_progress for insert with check (student_id = auth.uid());
+drop policy if exists vocab_progress_update on public.vocab_progress;
+create policy vocab_progress_update on public.vocab_progress for update using (student_id = auth.uid()) with check (student_id = auth.uid());
+
+-- Named vocabulary sets ("day1", "for writing", ...) like Quizlet folders
+create table if not exists public.vocab_sets (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.vocab_cards add column if not exists set_id uuid references public.vocab_sets(id) on delete cascade;
+create index if not exists idx_vocab_cards_set on public.vocab_cards(set_id);
+create index if not exists idx_vocab_sets_owner on public.vocab_sets(owner_id);
+
+alter table public.vocab_sets enable row level security;
+drop policy if exists vocab_sets_select on public.vocab_sets;
+create policy vocab_sets_select on public.vocab_sets for select using (owner_id = auth.uid() or public.is_staff());
+drop policy if exists vocab_sets_insert on public.vocab_sets;
+create policy vocab_sets_insert on public.vocab_sets for insert with check (owner_id = auth.uid() or public.is_staff());
+drop policy if exists vocab_sets_delete on public.vocab_sets;
+create policy vocab_sets_delete on public.vocab_sets for delete using (owner_id = auth.uid() or public.is_admin());
+
+-- AI translator history
+create table if not exists public.vocab_lookups (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  query text not null,
+  word text,
+  result jsonb not null,
+  added boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_vocab_lookups_student on public.vocab_lookups(student_id, created_at desc);
+
+alter table public.vocab_lookups enable row level security;
+drop policy if exists vocab_lookups_select on public.vocab_lookups;
+create policy vocab_lookups_select on public.vocab_lookups for select using (student_id = auth.uid() or public.is_staff());
+drop policy if exists vocab_lookups_insert on public.vocab_lookups;
+create policy vocab_lookups_insert on public.vocab_lookups for insert with check (student_id = auth.uid());
+drop policy if exists vocab_lookups_update on public.vocab_lookups;
+create policy vocab_lookups_update on public.vocab_lookups for update using (student_id = auth.uid()) with check (student_id = auth.uid());
 
 -- ----------------------------------------------------------------------------
 -- Storage buckets + policies
