@@ -1,4 +1,4 @@
-import { CheckCircle2, ArrowUpRight, Sparkles } from "lucide-react";
+import { CheckCircle2, ArrowUpRight, Sparkles, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui";
 import type { AiEvaluation } from "@/lib/types";
 
@@ -11,22 +11,26 @@ function bandColor(band: number): string {
 export function AiEvaluationView({ ev }: { ev: AiEvaluation }) {
   return (
     <div className="space-y-4">
-      <Card className="flex items-center gap-4">
-        <div
-          className="grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 text-2xl font-extrabold"
-          style={{ borderColor: bandColor(ev.overall_band), color: bandColor(ev.overall_band) }}
-        >
-          {ev.overall_band.toFixed(1)}
+      <Card className="space-y-3">
+        <div className="flex items-center gap-4">
+          <div
+            className="grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 text-2xl font-extrabold"
+            style={{ borderColor: bandColor(ev.overall_band), color: bandColor(ev.overall_band) }}
+          >
+            {ev.overall_band.toFixed(1)}
+          </div>
+          <div className="flex-1">
+            <div className="text-sm text-muted">Hozirgi band (baholangan)</div>
+            <div className="text-lg font-bold">IELTS {ev.overall_band.toFixed(1)}</div>
+            {ev.target_band && ev.target_band > ev.overall_band && (
+              <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-teal/15 px-2 py-0.5 text-xs font-semibold text-teal">
+                <TrendingUp className="h-3.5 w-3.5" /> Keyingi maqsad: {ev.target_band.toFixed(1)}
+              </div>
+            )}
+          </div>
         </div>
-        <div>
-          <div className="text-sm text-muted">Estimated overall band</div>
-          <div className="text-lg font-bold">IELTS {ev.overall_band.toFixed(1)}</div>
-          {ev.band_note ? (
-            <div className="mt-0.5 text-xs text-amber">{ev.band_note}</div>
-          ) : (
-            <div className="text-xs text-subtle">AI estimate — your teacher confirms the final score.</div>
-          )}
-        </div>
+        {ev.band_note && <p className="text-sm leading-relaxed text-fg/90">{ev.band_note}</p>}
+        <div className="text-xs text-subtle">AI baho — examiner mezonlariga asoslangan.</div>
       </Card>
 
       {ev.transcript && (
@@ -88,7 +92,7 @@ export function AiEvaluationView({ ev }: { ev: AiEvaluation }) {
 
       <Card className="border-primary-soft/30 bg-primary/5">
         <h3 className="mb-2 flex items-center gap-1.5 font-semibold text-primary-soft">
-          <Sparkles className="h-4 w-4" /> Model answer (one band higher)
+          <Sparkles className="h-4 w-4" /> Namuna javob (maqsad band)
         </h3>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg/90">{ev.upgraded_sample}</p>
       </Card>

@@ -115,16 +115,17 @@ export async function geminiJSON<T>(opts: {
   temperature?: number;
   images?: { data: string; mimeType: string }[];
   audio?: { data: string; mimeType: string };
+  thinking?: number; // thinking-token budget; lets the model reason before answering
 }): Promise<T> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("AI not configured");
 
   const generationConfig: Record<string, unknown> = {
     temperature: opts.temperature ?? 0.35,
-    maxOutputTokens: 4096,
+    maxOutputTokens: opts.thinking ? 8192 : 4096,
     responseMimeType: "application/json",
-    // No "thinking" — keeps the full token budget for the JSON answer.
-    thinkingConfig: { thinkingBudget: 0 },
+    // Reasoning is OFF by default (fast); evaluations turn it on for accuracy.
+    thinkingConfig: { thinkingBudget: opts.thinking ?? 0 },
   };
   if (opts.schema) generationConfig.responseSchema = opts.schema;
 
@@ -162,6 +163,7 @@ const EVAL_SCHEMA = {
   type: "OBJECT",
   properties: {
     overall_band: { type: "NUMBER" },
+    target_band: { type: "NUMBER" },
     band_note: { type: "STRING" },
     criteria: {
       type: "ARRAY",
@@ -182,13 +184,43 @@ const EVAL_SCHEMA = {
   required: ["overall_band", "band_note", "criteria", "strengths", "improvements", "upgraded_sample"],
 } as const;
 
-// Supportive calibration: grade honestly, then show a band ~1.0 higher to motivate.
-const GRADING_POLICY = `GRADING POLICY (supportive calibration — follow EXACTLY):
-1. First judge the answer strictly against the official band descriptors and decide the honest band.
-2. Then report an ENCOURAGING band that is about 1.0 higher than the strict band — NEVER more than +1.0 above strict, and NEVER above 9.0. (A strict 6.0 is reported as 7.0; a strict 5.5 as 6.5.) Do NOT jump two bands.
-3. Use this encouraging band for "overall_band" and for every criterion band.
-4. In "band_note" give ONE motivating sentence that states the student's honest current level and the single most important thing to fix to genuinely secure the reported band.
-Be encouraging, but always honest about what still needs work.`;
+// Rigorous, descriptor-anchored, HONEST scoring (accuracy = trust).
+const GRADING_POLICY = `GRADING POLICY — RIGOROUS & HONEST (follow EXACTLY):
+1. Match the answer to the closest official band descriptor for EACH of the four criteria SEPARATELY (use the descriptors provided).
+2. Give the HONEST band each criterion deserves (0–9, in 0.5 steps). Never inflate to be kind and never deflate — an accurate score is what actually helps the student. Two different examiners using these descriptors should reach your score.
+3. Justify each criterion band with SPECIFIC evidence: quote a word/phrase from the answer or name the exact error. No vague praise.
+4. "band_note": ONE honest, encouraging sentence — the student's real level now and the single highest-impact fix.
+5. "target_band": the next realistic band (about +0.5 to +1.0) the student can reach by fixing the issues you list.
+Think step by step before assigning any score.`;
+
+// Compact official-style band descriptors used to anchor the scores.
+const WRITING_DESCRIPTORS = `OFFICIAL BAND DESCRIPTORS (anchor every score to these):
+Task Response/Achievement — B5: partially addresses task, position unclear, ideas underdeveloped/irrelevant. B6: addresses all parts (some unevenly); position present; ideas relevant but not fully developed; (T1: covers requirements, some detail may be missing/inaccurate). B7: addresses all parts, clear position throughout, ideas extended & supported (may over-generalise); (T1: clear overview, key features highlighted). B8: fully addresses all parts; well-developed, well-supported ideas; (T1: fully satisfies requirements with a skilful overview).
+Coherence & Cohesion — B5: some organisation but inadequate/mechanical linking, unclear progression. B6: coherent overall; effective but sometimes faulty cohesion; paragraphing present but not always logical. B7: logically organised, clear progression; cohesive devices used well (some under/over-use); clear central topic per paragraph. B8: skilfully managed paragraphing; cohesion used so it attracts no attention.
+Lexical Resource — B5: limited range, noticeable errors that may cause difficulty. B6: adequate range; attempts less-common vocab with some inaccuracy; some spelling/word-form errors that don't impede. B7: sufficient range with flexibility/precision; some less-common items & collocation; occasional errors. B8: wide, natural, precise vocabulary; rare slips only.
+Grammatical Range & Accuracy — B5: limited range, frequent errors that can strain the reader. B6: mix of simple & complex forms; errors occur but rarely impede communication. B7: variety of complex structures; frequent error-free sentences; good control with some errors. B8: wide range, flexible & accurate; majority error-free, occasional slip.`;
+
+const SPEAKING_DESCRIPTORS = `OFFICIAL BAND DESCRIPTORS (anchor every score to these):
+Fluency & Coherence — B5: usually maintains flow but with repetition/self-correction/hesitation; can over-use connectives. B6: willing to speak at length though coherence may falter with hesitation; uses a range of connectives, sometimes inaccurately. B7: speaks at length without noticeable effort; some hesitation is content- not language-related; flexible use of connectives & discourse markers. B8: fluent with only occasional repetition/hesitation; coherent, well-developed topic.
+Lexical Resource — B5: manages to talk about familiar/unfamiliar topics but limited flexibility. B6: enough vocabulary to discuss topics at length; generally appropriate; attempts paraphrase with mixed success. B7: flexible vocabulary; some less-common & idiomatic items, some awareness of style; effective paraphrase. B8: wide, precise, natural vocabulary; skilful paraphrase & idiom.
+Grammatical Range & Accuracy — B5: basic + limited complex structures, frequent errors. B6: mix of simple & complex; frequent errors in complex forms but rarely impede. B7: range of complex structures with flexibility; frequent error-free sentences. B8: wide range used flexibly; majority error-free.
+Pronunciation — B5: some effective features but lapses; can be unclear at times, requiring effort. B6: range of features with mixed control; generally understandable, mispronunciations reduce clarity at times. B7: wide range of features, sustained though with lapses; generally easy to understand, L1 accent has little effect. B8: wide range of features used flexibly; easy to understand throughout, accent has minimal effect.`;
+
+/** IELTS overall = mean of the four criteria, rounded to the nearest 0.5. */
+function overallFromCriteria(criteria: { band: number }[], fallback: number): number {
+  const valid = criteria.map((c) => c.band).filter((b) => typeof b === "number" && b >= 0 && b <= 9);
+  if (!valid.length) return fallback;
+  const mean = valid.reduce((a, b) => a + b, 0) / valid.length;
+  return Math.round(mean * 2) / 2;
+}
+
+/** A realistic next-step target: between +0.5 and +1.0 above the current band. */
+function nextTarget(overall: number, raw?: number): number {
+  const floor = Math.min(overall + 0.5, 9);
+  const ceil = Math.min(overall + 1, 9);
+  if (!raw || raw < floor) return floor;
+  return Math.min(raw, ceil);
+}
 
 export async function evaluateWriting(input: {
   task: "task1" | "task2";
@@ -205,7 +237,11 @@ export async function evaluateWriting(input: {
     ? `\nAN IMAGE OF THE TASK 1 VISUAL IS ATTACHED. Base Task Achievement on how accurately and fully the response reports the key features, trends and data shown in the image, and whether it makes relevant comparisons. Penalise invented data that is not in the image.\n`
     : "";
 
-  const prompt = `You are a certified IELTS Writing examiner. Assess the candidate's ${input.task === "task1" ? "Academic Task 1" : "Task 2"} response strictly against the four official band descriptors: ${criteria}.
+  const prompt = `You are a certified, experienced IELTS Writing examiner. Assess the candidate's ${input.task === "task1" ? "Academic Task 1" : "Task 2"} response on the four official criteria: ${criteria}.
+
+${WRITING_DESCRIPTORS}
+
+${GRADING_POLICY}
 ${imageLine}
 QUESTION:
 ${input.question || "(not provided)"}
@@ -213,24 +249,27 @@ ${input.question || "(not provided)"}
 CANDIDATE'S RESPONSE:
 ${input.essay}
 
-${GRADING_POLICY}
-
 Return JSON with:
-- overall_band: the encouraging overall band (0–9, in 0.5 steps) per the grading policy.
-- band_note: one motivating sentence (see policy).
-- criteria: exactly the four criteria above, each with a band (0–9, encouraging) and a one-sentence justification that points to specific evidence in the essay.
-- strengths: 2–4 short bullet points.
-- improvements: 3–5 short, concrete, actionable bullet points (cite specific words/sentences from the essay).
-- upgraded_sample: a rewritten model answer that would score ONE band higher again (natural, exam-realistic, appropriate length).
+- criteria: exactly the four criteria above, each with an HONEST band (0–9, 0.5 steps) and a one-sentence justification quoting specific evidence from the essay.
+- overall_band: the mean of the four criteria, rounded to the nearest 0.5.
+- target_band: the next realistic band the student can reach.
+- band_note: one honest, encouraging sentence (real level now + the single highest-impact fix).
+- strengths: 2–4 short, specific bullet points.
+- improvements: 3–5 concrete, actionable bullets that each cite a specific issue and how to fix it.
+- upgraded_sample: a rewritten model answer at the target band (appropriate length, natural, exam-realistic).
 Write all feedback in clear English.`;
 
-  return geminiJSON<AiEvaluation>({
+  const res = await geminiJSON<AiEvaluation>({
     prompt,
     schema: EVAL_SCHEMA,
     system: MAGA_CORE,
-    temperature: 0.3,
+    temperature: 0.15,
+    thinking: 2048,
     images: input.image ? [input.image] : undefined,
   });
+  res.overall_band = overallFromCriteria(res.criteria, res.overall_band);
+  res.target_band = nextTarget(res.overall_band, res.target_band);
+  return res;
 }
 
 export async function evaluateSpeaking(input: {
@@ -238,9 +277,13 @@ export async function evaluateSpeaking(input: {
   question: string;
   answer: string;
 }): Promise<AiEvaluation> {
-  const prompt = `You are a certified IELTS Speaking examiner. Assess the candidate's spoken answer (provided as a transcript) for IELTS Speaking Part ${input.part}, using the four official criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, Pronunciation.
+  const prompt = `You are a certified, experienced IELTS Speaking examiner. Assess the candidate's spoken answer (provided as a transcript) for IELTS Speaking Part ${input.part} on the four official criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, Pronunciation.
 
-NOTE: You only have the transcript, so judge Pronunciation cautiously and focus mainly on the other three; mention this limitation briefly in the Pronunciation comment.
+${SPEAKING_DESCRIPTORS}
+
+NOTE: You only have the TRANSCRIPT, so judge Pronunciation cautiously (base it mainly on the other three) and say so briefly in the Pronunciation comment.
+
+${GRADING_POLICY}
 
 QUESTION / CUE:
 ${input.question}
@@ -248,18 +291,20 @@ ${input.question}
 CANDIDATE'S TRANSCRIBED ANSWER:
 ${input.answer}
 
-${GRADING_POLICY}
-
 Return JSON with:
-- overall_band: the encouraging overall band (0–9, in 0.5 steps) per the grading policy.
-- band_note: one motivating sentence (see policy).
-- criteria: the four criteria above, each with an (encouraging) band and a one-sentence justification.
+- criteria: the four criteria above, each with an HONEST band (0–9, 0.5 steps) and a one-sentence justification quoting specific evidence.
+- overall_band: the mean of the four criteria, rounded to the nearest 0.5.
+- target_band: the next realistic band the student can reach.
+- band_note: one honest, encouraging sentence (real level now + the single highest-impact fix).
 - strengths: 2–4 bullets.
-- improvements: 3–5 concrete bullets (e.g. linking words, tenses, range of vocabulary, ideas).
-- upgraded_sample: a model spoken answer to the same question one band higher (natural, spoken style, suitable length for Part ${input.part}).
+- improvements: 3–5 concrete bullets (linking, tenses, vocabulary range, ideas).
+- upgraded_sample: a model spoken answer at the target band (natural, spoken style, suitable length for Part ${input.part}).
 Write all feedback in clear English.`;
 
-  return geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.4 });
+  const res = await geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.15, thinking: 1024 });
+  res.overall_band = overallFromCriteria(res.criteria, res.overall_band);
+  res.target_band = nextTarget(res.overall_band, res.target_band);
+  return res;
 }
 
 const SPEAKING_SCHEMA = {
@@ -267,6 +312,7 @@ const SPEAKING_SCHEMA = {
   properties: {
     transcript: { type: "STRING" },
     overall_band: { type: "NUMBER" },
+    target_band: { type: "NUMBER" },
     band_note: { type: "STRING" },
     criteria: {
       type: "ARRAY",
@@ -289,30 +335,37 @@ export async function evaluateSpeakingAudio(input: {
   question: string;
   audio: { data: string; mimeType: string };
 }): Promise<AiEvaluation> {
-  const prompt = `You are a certified IELTS Speaking examiner. An AUDIO RECORDING of a candidate's answer is attached for IELTS Speaking Part ${input.part}.
+  const prompt = `You are a certified, experienced IELTS Speaking examiner. An AUDIO RECORDING of a candidate's answer is attached for IELTS Speaking Part ${input.part}.
 First, transcribe what the candidate actually says. Then assess them on the four official criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and Pronunciation. Because you have the REAL audio, judge Pronunciation properly — clarity, individual sounds, word and sentence stress, intonation, and how easy they are to understand.
+
+${SPEAKING_DESCRIPTORS}
+
+${GRADING_POLICY}
 
 QUESTION / CUE:
 ${input.question}
 
-${GRADING_POLICY}
-
 Return JSON with:
 - transcript: an accurate transcription of what the candidate said.
-- overall_band: the encouraging overall band (0–9, 0.5 steps) per the grading policy.
-- band_note: one motivating sentence (see policy).
-- criteria: the four criteria above, each with an (encouraging) band and a one-sentence justification referring to what you heard.
+- criteria: the four criteria above, each with an HONEST band (0–9, 0.5 steps) and a one-sentence justification referring to specific things you heard.
+- overall_band: the mean of the four criteria, rounded to the nearest 0.5.
+- target_band: the next realistic band the student can reach.
+- band_note: one honest, encouraging sentence (real level now + the single highest-impact fix).
 - strengths: 2–4 bullets.
 - improvements: 3–5 concrete bullets (fluency, pronunciation of specific sounds/words, grammar, vocabulary, ideas).
-- upgraded_sample: a model spoken answer one band higher (natural, spoken style, suitable length for Part ${input.part}).
+- upgraded_sample: a model spoken answer at the target band (natural, spoken style, suitable length for Part ${input.part}).
 Write all feedback in clear English.`;
-  return geminiJSON<AiEvaluation>({
+  const res = await geminiJSON<AiEvaluation>({
     prompt,
     schema: SPEAKING_SCHEMA,
     system: MAGA_CORE,
-    temperature: 0.3,
+    temperature: 0.15,
+    thinking: 2048,
     audio: input.audio,
   });
+  res.overall_band = overallFromCriteria(res.criteria, res.overall_band);
+  res.target_band = nextTarget(res.overall_band, res.target_band);
+  return res;
 }
 
 /* ----------------- Specialist Writing master (chat) ----------------- */

@@ -181,6 +181,7 @@ export interface BandCriterion {
 }
 export interface AiEvaluation {
   overall_band: number;
+  target_band?: number; // next realistic band to aim for
   band_note?: string;
   transcript?: string; // speaking: what the AI heard
   criteria: BandCriterion[];
