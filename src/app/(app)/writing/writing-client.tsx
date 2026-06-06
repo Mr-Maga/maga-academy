@@ -234,8 +234,8 @@ function PromptPicker({
 /* ------------------------------ Mock flow ------------------------------ */
 
 function MockView({ onBack }: { onBack: () => void }) {
-  const [p1, setP1] = useState<WritingPrompt>(() => randomPrompt("task1"));
-  const [p2, setP2] = useState<WritingPrompt>(() => randomPrompt("task2"));
+  const [q1, setQ1] = useState<string>(() => randomPrompt("task1").prompt);
+  const [q2, setQ2] = useState<string>(() => randomPrompt("task2").prompt);
   const [state, action, pending] = useActionState<MockWritingState, FormData>(checkMockWriting, undefined);
   const [e1, setE1] = useState("");
   const [e2, setE2] = useState("");
@@ -249,22 +249,28 @@ function MockView({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={() => {
-            setP1(randomPrompt("task1"));
-            setP2(randomPrompt("task2"));
+            setQ1(randomPrompt("task1").prompt);
+            setQ2(randomPrompt("task2").prompt);
+            setE1("");
+            setE2("");
           }}
           className="btn-ghost text-xs"
         >
-          <Shuffle className="h-3.5 w-3.5" /> Yangi mavzular
+          <Shuffle className="h-3.5 w-3.5" /> Tasodifiy mavzular
         </button>
       )}
 
       <form action={action} className="space-y-4">
-        <input type="hidden" name="question1" value={p1.prompt} />
-        <input type="hidden" name="question2" value={p2.prompt} />
-
         <div className="card space-y-2 p-4">
-          <div className="label">Task 1 · {p1.label} · {p1.type}</div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg/90">{p1.prompt}</p>
+          <div className="label">Task 1 mavzusi — tahrirlang yoki o‘zingiznikini yozing</div>
+          <textarea
+            name="question1"
+            rows={3}
+            value={q1}
+            onChange={(e) => setQ1(e.target.value)}
+            className="input"
+            placeholder="Task 1 mavzusi (grafik/jadval tavsifi)…"
+          />
           <textarea
             name="essay1"
             rows={8}
@@ -277,8 +283,15 @@ function MockView({ onBack }: { onBack: () => void }) {
         </div>
 
         <div className="card space-y-2 p-4">
-          <div className="label">Task 2 · {p2.label} · {p2.type}</div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg/90">{p2.prompt}</p>
+          <div className="label">Task 2 mavzusi — tahrirlang yoki o‘zingiznikini yozing</div>
+          <textarea
+            name="question2"
+            rows={3}
+            value={q2}
+            onChange={(e) => setQ2(e.target.value)}
+            className="input"
+            placeholder="Task 2 mavzusi (insho savoli)…"
+          />
           <textarea
             name="essay2"
             rows={12}
