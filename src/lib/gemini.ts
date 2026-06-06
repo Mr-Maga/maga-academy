@@ -113,6 +113,8 @@ export async function geminiJSON<T>(opts: {
   prompt: string;
   schema?: object;
   temperature?: number;
+  images?: { data: string; mimeType: string }[];
+  audio?: { data: string; mimeType: string };
 }): Promise<T> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("AI not configured");
@@ -126,8 +128,15 @@ export async function geminiJSON<T>(opts: {
   };
   if (opts.schema) generationConfig.responseSchema = opts.schema;
 
+  const parts: Record<string, unknown>[] = [];
+  for (const img of opts.images ?? []) {
+    parts.push({ inline_data: { mime_type: img.mimeType, data: img.data } });
+  }
+  if (opts.audio) parts.push({ inline_data: { mime_type: opts.audio.mimeType, data: opts.audio.data } });
+  parts.push({ text: opts.prompt });
+
   const body: Record<string, unknown> = {
-    contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
+    contents: [{ role: "user", parts }],
     generationConfig,
   };
   if (opts.system) body.systemInstruction = { parts: [{ text: opts.system }] };
@@ -185,14 +194,19 @@ export async function evaluateWriting(input: {
   task: "task1" | "task2";
   question: string;
   essay: string;
+  image?: { data: string; mimeType: string };
 }): Promise<AiEvaluation> {
   const criteria =
     input.task === "task1"
       ? "Task Achievement, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy"
       : "Task Response, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy";
 
-  const prompt = `You are a certified IELTS Writing examiner. Assess the candidate's ${input.task === "task1" ? "Academic Task 1" : "Task 2"} response strictly against the four official band descriptors: ${criteria}.
+  const imageLine = input.image
+    ? `\nAN IMAGE OF THE TASK 1 VISUAL IS ATTACHED. Base Task Achievement on how accurately and fully the response reports the key features, trends and data shown in the image, and whether it makes relevant comparisons. Penalise invented data that is not in the image.\n`
+    : "";
 
+  const prompt = `You are a certified IELTS Writing examiner. Assess the candidate's ${input.task === "task1" ? "Academic Task 1" : "Task 2"} response strictly against the four official band descriptors: ${criteria}.
+${imageLine}
 QUESTION:
 ${input.question || "(not provided)"}
 
@@ -210,7 +224,13 @@ Return JSON with:
 - upgraded_sample: a rewritten model answer that would score ONE band higher again (natural, exam-realistic, appropriate length).
 Write all feedback in clear English.`;
 
-  return geminiJSON<AiEvaluation>({ prompt, schema: EVAL_SCHEMA, system: MAGA_CORE, temperature: 0.3 });
+  return geminiJSON<AiEvaluation>({
+    prompt,
+    schema: EVAL_SCHEMA,
+    system: MAGA_CORE,
+    temperature: 0.3,
+    images: input.image ? [input.image] : undefined,
+  });
 }
 
 export async function evaluateSpeaking(input: {

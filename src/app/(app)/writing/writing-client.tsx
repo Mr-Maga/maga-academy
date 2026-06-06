@@ -68,6 +68,7 @@ function SingleView({ task, onBack }: { task: "task1" | "task2"; onBack: () => v
   const [selected, setSelected] = useState<WritingPrompt | null>(null);
   const [state, action, pending] = useActionState<WritingCheckState, FormData>(checkWriting, undefined);
   const [essay, setEssay] = useState("");
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
 
   if (!selected) {
     return <PromptPicker task={task} onBack={onBack} onSelect={setSelected} />;
@@ -98,6 +99,28 @@ function SingleView({ task, onBack }: { task: "task1" | "task2"; onBack: () => v
       <form action={action} className="card space-y-3 p-4">
         <input type="hidden" name="task" value={task} />
         <input type="hidden" name="question" value={selected.prompt} />
+
+        {task === "task1" && (
+          <div>
+            <span className="label">Task 1 rasmi (ixtiyoriy — grafik/jadval/xarita)</span>
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              className="input text-sm"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setImgPreview(f ? URL.createObjectURL(f) : null);
+              }}
+            />
+            {imgPreview && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imgPreview} alt="Task 1" className="border-line mt-2 max-h-60 rounded-lg border" />
+            )}
+            <p className="mt-1 text-xs text-subtle">Rasm yuklasangiz, AI undagi ma’lumotni ko‘rib baholaydi.</p>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <span className="label">Javobingiz</span>
           <span className="text-xs text-subtle">{wc(essay)} so‘z</span>
@@ -147,13 +170,48 @@ function PromptPicker({
   onSelect: (p: WritingPrompt) => void;
 }) {
   const prompts = promptsFor(task);
+  const [custom, setCustom] = useState("");
   return (
     <div className="space-y-4">
       <BackBar onBack={onBack} label="Writing" />
-      <button onClick={() => onSelect(randomPrompt(task))} className="btn-primary w-full py-3">
-        <Shuffle className="h-4 w-4" /> Tasodifiy mavzu (random)
-      </button>
-      <p className="text-xs text-subtle">yoki ro‘yxatdan tanlang ({prompts.length} ta eng muhim mavzu):</p>
+
+      {/* Your own topic + random beside it (Engnovate-style) */}
+      <div className="card space-y-2 p-4">
+        <span className="label">O‘z mavzuingizni kiriting</span>
+        <textarea
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          rows={3}
+          className="input"
+          placeholder="Boshqa joydan olgan mavzuni shu yerga joylang…"
+        />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={custom.trim().length < 10}
+            onClick={() =>
+              onSelect({
+                id: "custom",
+                label: "O‘z mavzum",
+                type: task === "task1" ? "Custom — rasm yuklashingiz mumkin" : "Custom",
+                prompt: custom.trim(),
+              })
+            }
+            className="btn-primary flex-1 py-2.5"
+          >
+            <PenLine className="h-4 w-4" /> Shu mavzu bilan boshlash
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelect(randomPrompt(task))}
+            className="btn-ghost px-4"
+          >
+            <Shuffle className="h-4 w-4" /> Random
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-subtle">yoki tayyor {prompts.length} ta eng muhim mavzudan tanlang:</p>
       <div className="space-y-2">
         {prompts.map((p) => (
           <button

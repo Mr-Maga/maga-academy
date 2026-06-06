@@ -26,8 +26,18 @@ export async function checkWriting(
   if (essay.length < 40) return { error: "Please write (or paste) at least a few sentences." };
   if (essay.length > 8000) return { error: "That's too long — please shorten it." };
 
+  // Optional Task 1 chart/diagram image — sent to the AI so it can judge accuracy.
+  let image: { data: string; mimeType: string } | undefined;
+  const file = formData.get("image");
+  if (task === "task1" && file instanceof File && file.size > 0) {
+    if (file.size > 5 * 1024 * 1024) return { error: "Rasm juda katta (maksimal 5MB)." };
+    if (!file.type.startsWith("image/")) return { error: "Faqat rasm fayl yuklang." };
+    const buf = Buffer.from(await file.arrayBuffer());
+    image = { data: buf.toString("base64"), mimeType: file.type };
+  }
+
   try {
-    const result = await evaluateWriting({ task, question, essay });
+    const result = await evaluateWriting({ task, question, essay, image });
 
     // Persist to DB (fire-and-forget — don't block the response on a DB error)
     const supabase = await createClient();
