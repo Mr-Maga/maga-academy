@@ -263,8 +263,8 @@ Write all feedback in clear English.`;
     prompt,
     schema: EVAL_SCHEMA,
     system: MAGA_CORE,
-    temperature: 0.15,
-    thinking: 2048,
+    temperature: 0.12,
+    thinking: 1024,
     images: input.image ? [input.image] : undefined,
   });
   res.overall_band = overallFromCriteria(res.criteria, res.overall_band);
