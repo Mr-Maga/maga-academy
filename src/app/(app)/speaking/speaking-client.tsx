@@ -21,7 +21,9 @@ import type { AiEvaluation } from "@/lib/types";
 
 type Part = 1 | 2 | 3;
 type Mode = Part | "full";
-type Selected = { title: string; question: string; display: ReactNode };
+type Selected =
+  | { kind: "qs"; title: string; questions: string[] } // Part 1 & 3 — one question at a time
+  | { kind: "cue"; title: string; cueText: string; card: string; bullets: string[] }; // Part 2
 
 const round5 = (n: number) => Math.round(n * 2) / 2;
 
@@ -46,51 +48,13 @@ async function gradeSpeaking(
 }
 
 function p1Selected(s: Part1Set): Selected {
-  return {
-    title: `Part 1 · ${s.theme}`,
-    question: part1Text(s),
-    display: (
-      <ul className="space-y-1.5 text-sm">
-        {s.questions.map((q, i) => (
-          <li key={i} className="font-medium">
-            {i + 1}. {q}
-          </li>
-        ))}
-      </ul>
-    ),
-  };
-}
-function cueSelected(c: CueCard): Selected {
-  return {
-    title: `Part 2 · ${c.theme}`,
-    question: cueText(c),
-    display: (
-      <>
-        <p className="font-semibold">{c.card}</p>
-        <p className="mt-2 text-sm text-muted">You should say:</p>
-        <ul className="mt-1 list-inside list-disc text-sm text-muted">
-          {c.bullets.map((b, i) => (
-            <li key={i}>{b}</li>
-          ))}
-        </ul>
-      </>
-    ),
-  };
+  return { kind: "qs", title: `Part 1 · ${s.theme}`, questions: s.questions };
 }
 function p3Selected(s: Part3Set): Selected {
-  return {
-    title: `Part 3 · ${s.theme}`,
-    question: part3Text(s),
-    display: (
-      <ul className="space-y-1.5 text-sm">
-        {s.questions.map((q, i) => (
-          <li key={i} className="font-medium">
-            {i + 1}. {q}
-          </li>
-        ))}
-      </ul>
-    ),
-  };
+  return { kind: "qs", title: `Part 3 · ${s.theme}`, questions: s.questions };
+}
+function cueSelected(c: CueCard): Selected {
+  return { kind: "cue", title: `Part 2 · ${c.theme}`, cueText: cueText(c), card: c.card, bullets: c.bullets };
 }
 
 export function SpeakingClient() {
@@ -136,36 +100,105 @@ function ModePicker({ onPick }: { onPick: (m: Mode) => void }) {
 
 function SinglePartView({ part, onBack }: { part: Part; onBack: () => void }) {
   const [sel, setSel] = useState<Selected | null>(null);
+  const [index, setIndex] = useState(0);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AiEvaluation | null>(null);
 
-  if (!sel) return <TopicPicker part={part} onBack={onBack} onSelect={setSel} />;
+  const resetAnswer = () => {
+    setBlob(null);
+    setResult(null);
+    setError(null);
+  };
 
-  async function submit() {
-    if (!blob || loading || !sel) return;
+  if (!sel) {
+    return (
+      <TopicPicker
+        part={part}
+        onBack={onBack}
+        onSelect={(s) => {
+          setSel(s);
+          setIndex(0);
+          resetAnswer();
+        }}
+      />
+    );
+  }
+
+  // sel is non-null below
+  const questionForAi =
+    sel.kind === "qs" ? `IELTS Speaking Part ${part} question: ${sel.questions[index]}` : sel.cueText;
+
+  const reRandom = () => {
+    const ns = part === 1 ? p1Selected(randomOf(PART1_SETS)) : part === 3 ? p3Selected(randomOf(PART3_SETS)) : cueSelected(randomOf(PART2_CUECARDS));
+    setSel(ns);
+    setIndex(0);
+    resetAnswer();
+  };
+  const nextQ = () => {
+    if (sel.kind === "qs" && index < sel.questions.length - 1) {
+      setIndex(index + 1);
+      resetAnswer();
+    } else {
+      reRandom();
+    }
+  };
+  const submit = async () => {
+    if (!blob || loading) return;
     setLoading(true);
     setError(null);
-    const data = await gradeSpeaking(part, sel.question, blob);
+    const data = await gradeSpeaking(part, questionForAi, blob);
     if (data.error) setError(data.error);
     else setResult(data.result ?? null);
     setLoading(false);
-  }
+  };
 
   return (
     <div className="space-y-5">
-      <BackBar onBack={() => setSel(null)} label="Mavzular" />
+      <div className="flex items-center justify-between">
+        <BackBar
+          onBack={() => {
+            setSel(null);
+            resetAnswer();
+          }}
+          label="Mavzular"
+        />
+        <button onClick={reRandom} type="button" className="btn-ghost text-xs">
+          <Shuffle className="h-3.5 w-3.5" /> Boshqa mavzu
+        </button>
+      </div>
 
-      <div className="card space-y-1 p-4">
-        <div className="label">{sel.title}</div>
-        {sel.display}
+      <div className="card space-y-2 p-4">
+        <div className="label">
+          {sel.title}
+          {sel.kind === "qs" && ` · savol ${index + 1}/${sel.questions.length}`}
+        </div>
+        {sel.kind === "cue" ? (
+          <>
+            <p className="font-semibold">{sel.card}</p>
+            {sel.bullets.length > 0 && (
+              <ul className="mt-1 list-inside list-disc text-sm text-muted">
+                {sel.bullets.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="text-lg font-semibold leading-snug">{sel.questions[index]}</p>
+        )}
+        {sel.kind === "qs" && !result && (
+          <button onClick={nextQ} type="button" className="btn-ghost text-xs">
+            {index < sel.questions.length - 1 ? "Keyingi savol →" : "Boshqa mavzu →"}
+          </button>
+        )}
       </div>
 
       {!result && (
         <div className="card space-y-3 p-4">
           <div className="label">Javobingizni yozib oling</div>
-          <VoiceRecorder key={sel.title} onRecorded={setBlob} />
+          <VoiceRecorder key={`${sel.title}-${index}`} onRecorded={setBlob} />
           {error && <p className="text-sm text-danger">{error}</p>}
           <button onClick={submit} disabled={!blob || loading} className="btn-primary w-full py-3">
             {loading ? (
@@ -186,10 +219,13 @@ function SinglePartView({ part, onBack }: { part: Part; onBack: () => void }) {
           <AiEvaluationView ev={result} />
           <SpeakingChat
             part={part}
-            question={sel.question}
+            question={questionForAi}
             transcript={result.transcript ?? ""}
             evalSummary={evalSummary(result)}
           />
+          <button onClick={nextQ} type="button" className="btn-primary w-full py-3">
+            {sel.kind === "qs" && index < sel.questions.length - 1 ? "Keyingi savolga o‘tish →" : "Boshqa mavzu (random) →"}
+          </button>
         </>
       )}
     </div>
@@ -217,11 +253,13 @@ function TopicPicker({
 
   const startCustom = () => {
     const label = part === 1 ? "Part 1" : part === 2 ? "Part 2" : "Part 3";
-    onSelect({
-      title: `${label} · O‘z mavzum`,
-      question: `IELTS Speaking ${label}. ${custom.trim()}`,
-      display: <p className="whitespace-pre-wrap text-sm">{custom.trim()}</p>,
-    });
+    const text = custom.trim();
+    if (part === 2) {
+      onSelect({ kind: "cue", title: `${label} · O‘z mavzum`, cueText: `IELTS Speaking Part 2 cue card: ${text}`, card: text, bullets: [] });
+    } else {
+      const qs = text.split(/\n+/).map((q) => q.trim()).filter(Boolean);
+      onSelect({ kind: "qs", title: `${label} · O‘z mavzum`, questions: qs.length ? qs : [text] });
+    }
   };
 
   const list =
