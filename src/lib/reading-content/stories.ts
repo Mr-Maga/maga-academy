@@ -6,74 +6,282 @@ import type { ReadingPiece } from "./index";
 export const STORIES: ReadingPiece[] = [
   /* ----------------------------------------------------------------- A1 --- */
   {
-    id: "st-a1-cat",
+    id: "st-a1-seeds",
     kind: "story",
     level: "A1",
-    title: "My Cat Milo",
-    topic: "Animals",
-    body: `I have a small cat. His name is Milo. He is white and grey.
+    title: "The Two Seeds",
+    topic: "Courage",
+    body: `Two small seeds are in the ground. They both want to grow.
 
-Milo likes to sleep. He sleeps on my bed. He sleeps on the chair. He sleeps in the sun.
+The first seed is afraid. "It is dark here, but it is safe," it says. "I want to stay." So it stays in the ground.
 
-In the morning, Milo is hungry. He looks at me. "Meow," he says. I give him food and water.
+The second seed is brave. "I want to see the sun!" it says. It pushes up, up, up. It is hard work, but it does not stop.
 
-Milo likes to play. He plays with a small ball. He runs and jumps. He is very fast!
+One day, the second seed comes out of the ground. Now it is a beautiful flower. It feels the warm sun and the soft rain.
 
-At night, Milo sits with me. He is warm and soft. I love my cat. Milo is my best friend.`,
+The first seed is still in the dark. It never sees the sun.
+
+Sometimes we are afraid of new things. But if we are brave and try, good things can grow.`,
   },
   {
-    id: "st-a1-beach",
+    id: "st-a1-birds",
     kind: "story",
     level: "A1",
-    title: "A Day at the Beach",
+    title: "The Old Man and the Birds",
+    topic: "Friendship",
+    body: `Every morning, an old man sits in the park. He has some bread. He gives the bread to the birds.
+
+The man lives alone. He has no family near him. But the birds are his friends. They come to him every day.
+
+One morning, a small boy sees the man. "Can I help you?" the boy asks.
+
+"Yes, please," says the man with a smile.
+
+Now the boy comes every morning too. They feed the birds together. They talk and they laugh.
+
+The old man is not alone now. He is happy again.
+
+We all need friends. And one small act of kindness can change a person's whole day.`,
+  },
+  {
+    id: "st-a1-tea",
+    kind: "story",
+    level: "A1",
+    title: "A Cup of Tea",
     topic: "Family",
-    body: `Today is sunny. My family goes to the beach. I am very happy.
+    body: `It is evening. Mum comes home from work. She is very tired. She sits on the chair and closes her eyes.
 
-The sea is blue. The sand is yellow and warm. I take off my shoes.
+Her daughter, Lola, is only seven years old. She wants to help. She goes to the kitchen. Slowly and carefully, she makes a cup of tea.
 
-My brother and I play in the water. The water is cold! We laugh and run.
+She brings the tea to her mother. "This is for you, Mum," she says.
 
-Mum makes sandwiches. We eat on a big towel. The food is good.
+Mum opens her eyes. She sees the tea and her daughter's happy face. She smiles.
 
-In the afternoon, I build a sandcastle. It is big. Then a wave comes and takes it. Oh no!
+"Thank you, my dear," she says. "This is the best tea in the world."
 
-We go home in the evening. I am tired but happy. The beach is fun.`,
+The cup of tea is small. But the love inside it is very big.
+
+We do not need money to show love. Sometimes a small, kind act is enough.`,
   },
   {
-    id: "st-a1-balloon",
+    id: "st-a1-sorry",
     kind: "story",
     level: "A1",
-    title: "The Red Balloon",
-    topic: "Childhood",
-    body: `Tom has a red balloon. It is big and round. He loves it very much.
+    title: "I Am Sorry",
+    topic: "Honesty",
+    body: `Sam plays with his friend's toy car. He is not careful. The car falls down and breaks.
 
-Tom plays with the balloon in the park. He hits it up. It goes up, up, up. Then it comes down. Tom laughs.
+Sam is afraid. "My friend will be angry," he thinks. He wants to hide the broken car. But he knows that is not honest.
 
-A small girl looks at the balloon. She is sad. She has no toy.
+Sam takes the car to his friend, Ali. "I am sorry, Ali," he says. "I broke your car. It is my fault."
 
-Tom thinks. Then he gives the balloon to the girl. "For you," he says.
+Ali looks at the car. He is a little sad. But then he smiles.
 
-The girl smiles. "Thank you!" she says.
+"Thank you for telling me the truth," Ali says. "It is only a toy. You are my friend."
 
-Tom has no balloon now. But he is happy. It is good to share.`,
+The two boys are still friends.
+
+When we make a mistake, it is always better to be honest and say sorry.`,
   },
   {
-    id: "st-a1-zoo",
+    id: "st-a1-hungrydog",
     kind: "story",
     level: "A1",
-    title: "At the Zoo",
-    topic: "Animals",
-    body: `We go to the zoo on Saturday. There are many animals.
+    title: "The Hungry Dog",
+    topic: "Kindness",
+    body: `Nina walks to school. She has some bread for her lunch. On the street, she sees a small dog. The dog is thin and hungry. It looks at her with sad eyes.
 
-First, we see the lions. They are big and yellow. One lion sleeps. One lion walks.
+Nina stops. She is hungry too. But the dog is more hungry than her.
 
-Then we see the monkeys. They jump and play. They are very funny. I laugh a lot.
+She gives half of her bread to the dog. The dog eats fast. Then it looks at Nina and moves its tail. It is happy.
 
-The elephants are grey and very big. They have long noses. They eat green leaves.
+Now, every morning, the dog waits for Nina near the road. They are good friends.
 
-My favourite animal is the penguin. Penguins are black and white. They swim fast in the water.
+Nina shares only a little food. But she gets a true friend.
 
-The zoo is great. I want to come again!`,
+When we share with others, we often receive much more than we give.`,
+  },
+  {
+    id: "st-a1-everyday",
+    kind: "story",
+    level: "A1",
+    title: "A Little Every Day",
+    topic: "Learning",
+    body: `Tom has a big test next month. He is worried. "I can not learn everything!" he says.
+
+His sister has a good idea. "Do not try to study everything in one day," she says. "Study a little every day."
+
+So Tom learns ten new words every day. It is not difficult. Ten words is easy.
+
+After one week, he knows seventy words. After one month, he knows hundreds of words.
+
+The day of the test comes. Tom is calm. He knows the answers. He passes the test.
+
+A big job becomes easy when we do a little every day. This is a very important habit.`,
+  },
+  {
+    id: "st-a1-lostboy",
+    kind: "story",
+    level: "A1",
+    title: "The Lost Boy",
+    topic: "Help",
+    body: `The big shop is full of people. A small boy, Max, looks for his mother. But he can not find her. He is lost. He is scared and wants to cry.
+
+Then he remembers his mother's words: "If you are ever lost, ask a worker for help."
+
+Max sees a woman in a shop uniform. "Excuse me," he says. "I can not find my mum."
+
+The woman is kind. "Do not worry," she says. "I will help you."
+
+Soon, they find his mother. She hugs Max. "Good boy," she says. "You asked for help."
+
+When we have a problem, we should not be afraid. It is brave to ask for help.`,
+  },
+  {
+    id: "st-a1-rain",
+    kind: "story",
+    level: "A1",
+    title: "After the Rain",
+    topic: "Hope",
+    body: `It rains all morning. Aziza looks out of the window. She is sad. "I want to play outside," she says. "I do not like the rain."
+
+Her grandmother sits next to her. "Look at the rain," Grandma says. "It gives water to the flowers and the trees. Without rain, nothing can grow."
+
+After lunch, the rain stops. The sun comes out. Aziza goes outside. The grass is green and clean. The flowers are bright. A small bird sings on a tree.
+
+Aziza smiles. Now she understands.
+
+Sometimes difficult things bring good things too. After the rain, the sun always comes again.`,
+  },
+  {
+    id: "st-a1-shoes",
+    kind: "story",
+    level: "A1",
+    title: "Old Shoes",
+    topic: "Gratitude",
+    body: `Bek wants new shoes. His shoes are old. "My shoes are not nice," he says to his father. "I want new ones, please."
+
+The next day, Bek sees a boy at the bus stop. The boy has no shoes at all. His feet are cold and dirty.
+
+Bek looks down at his own shoes. They are old, but they are warm. They are good shoes.
+
+At home, Bek does not ask for new shoes again. Instead, he says, "Thank you for my shoes, Dad."
+
+His father is surprised and very happy.
+
+We often want more and more things. But it is important to say thank you for what we already have.`,
+  },
+  {
+    id: "st-a1-garden",
+    kind: "story",
+    level: "A1",
+    title: "The Quiet Garden",
+    topic: "Calm",
+    body: `Mr. Karimov is always busy. He works all day. He looks at his phone all the time. He is tired, and he is never calm.
+
+One day, he sits down in a small garden. At first, he looks at his phone again. But then he stops. He puts the phone in his pocket.
+
+He listens. He hears the birds. He hears the wind in the trees. He sees a butterfly. The garden is quiet and beautiful.
+
+For ten minutes, he does nothing. He just sits and breathes. He feels calm and happy.
+
+Now he sits in the garden every day.
+
+We are all busy. But it is important to rest and be quiet sometimes.`,
+  },
+  {
+    id: "st-a1-tree",
+    kind: "story",
+    level: "A1",
+    title: "The Tall Tree",
+    topic: "Patience",
+    body: `A young boy plants a small tree in his garden. "Grow fast!" he says. But the tree grows very slowly.
+
+"Why is it so slow?" the boy asks his grandfather.
+
+"Good things take time," Grandpa says. "Be patient and wait."
+
+So the boy waits. One year, two years, then five years pass. The tree grows a little more every year.
+
+Now the boy is a young man. The tree is tall and strong. In summer, it gives cool shade. Birds build their homes in it. One day, his own children will play under it.
+
+He is happy that he waited.
+
+The best things in life do not come quickly. We must be patient.`,
+  },
+  {
+    id: "st-a1-watch",
+    kind: "story",
+    level: "A1",
+    title: "Grandpa's Watch",
+    topic: "Family",
+    body: `Grandpa is very old now. One day, he calls his grandson, Jasur. He has a gift for him.
+
+It is an old watch. It is not new. It is not expensive. But Grandpa loves it very much.
+
+"This watch was my father's watch," Grandpa says. "Now it is yours. But remember one thing: the watch is not the real gift. Time is the gift. Give your time to the people you love."
+
+Jasur keeps the old watch. He thinks about Grandpa's words every day.
+
+Now he visits his grandfather every week. They drink tea and talk for hours.
+
+Money can buy many things. But the best gift we can give anyone is our time.`,
+  },
+  {
+    id: "st-a1-coin",
+    kind: "story",
+    level: "A1",
+    title: "The Coin",
+    topic: "Generosity",
+    body: `Dilnoza walks home from school. On the road, she finds a coin. She is happy. "Now I can buy a sweet," she thinks.
+
+Then she sees an old man. He sits on the ground near the shop. He is poor and hungry. He has nothing.
+
+Dilnoza looks at her coin. Then she looks at the old man's tired face.
+
+She walks to him and gives him the coin. "This is for you," she says.
+
+"Thank you, my child," the man says. His eyes are wet. "You have a kind heart."
+
+Dilnoza has no coin now. She has no sweet. But inside, she feels rich and warm.
+
+When we give to others, we often feel richer than before.`,
+  },
+  {
+    id: "st-a1-scaredcat",
+    kind: "story",
+    level: "A1",
+    title: "The Scared Cat",
+    topic: "Patience",
+    body: `Olim has a new cat. But the cat is scared. It hides under the bed all day. It does not come to Olim.
+
+Olim wants the cat to be his friend. But he does not pull it out. He is gentle and quiet.
+
+Every day, he sits near the bed. He talks in a soft voice. He puts some food on the floor. Then he waits.
+
+One day, two days, then a week passes. Slowly, the cat comes a little closer each time.
+
+Then, one morning, the cat jumps onto Olim's lap. It is not scared now. It trusts him.
+
+Trust takes time. With kindness and patience, we can win a true friend.`,
+  },
+  {
+    id: "st-a1-firstday",
+    kind: "story",
+    level: "A1",
+    title: "The First Day",
+    topic: "Confidence",
+    body: `Today is Sara's first day at her new job. She is nervous. "I do not know anyone here," she thinks. "What if nobody likes me?"
+
+She wants to stay quiet and sit alone. But then she takes a deep breath. She decides to be brave.
+
+She smiles and says "Hello" to the woman next to her.
+
+The woman smiles back. "Hello! Welcome to the team," she says. Soon, they talk like old friends.
+
+At lunch time, Sara is not alone. She already has new friends.
+
+On a first day, it is normal to feel nervous. But a simple smile and a friendly "hello" can open many doors.`,
   },
 
   /* ----------------------------------------------------------------- A2 --- */
