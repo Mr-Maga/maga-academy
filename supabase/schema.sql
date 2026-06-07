@@ -814,3 +814,31 @@ grant execute on all functions in schema public to authenticated;
 -- claim_role / RPCs available to signed-in users only
 revoke all on function public.claim_role(text, boolean) from anon;
 revoke all on function public.touch_streak() from anon;
+
+-- ----------------------------------------------------------------------------
+-- daily_tasks: a student's self-set study plan for a given day. Created via the
+-- Maga planner ("tell Maga what you'll do today"); progress (done/total) shows
+-- on the dashboard. RLS: students manage their own; staff may read.
+-- ----------------------------------------------------------------------------
+create table if not exists public.daily_tasks (
+  id          uuid primary key default gen_random_uuid(),
+  student_id  uuid not null references public.profiles(id) on delete cascade,
+  title       text not null,
+  tool        text check (tool in ('writing','speaking','vocab','exercises','reading','listening')),
+  done        boolean not null default false,
+  task_date   date not null default current_date,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_daily_tasks_student_date on public.daily_tasks(student_id, task_date);
+
+alter table public.daily_tasks enable row level security;
+
+drop policy if exists daily_tasks_select on public.daily_tasks;
+create policy daily_tasks_select on public.daily_tasks for select using (student_id = auth.uid() or public.is_staff());
+drop policy if exists daily_tasks_insert on public.daily_tasks;
+create policy daily_tasks_insert on public.daily_tasks for insert with check (student_id = auth.uid());
+drop policy if exists daily_tasks_update on public.daily_tasks;
+create policy daily_tasks_update on public.daily_tasks for update using (student_id = auth.uid()) with check (student_id = auth.uid());
+drop policy if exists daily_tasks_delete on public.daily_tasks;
+create policy daily_tasks_delete on public.daily_tasks for delete using (student_id = auth.uid());

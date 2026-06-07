@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Flame, Trophy, Zap, CalendarCheck, Sparkles, ArrowRight, Lock } from "lucide-react";
+import { Flame, Trophy, Zap, Sparkles, ArrowRight, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { BandRing, StatPill, XpBar, ActionTile } from "@/components/gamify";
-import type { Profile, StudentProgress } from "@/lib/types";
+import { BandRing, StatPill, ActionTile } from "@/components/gamify";
+import { DailyPlan } from "./daily-plan";
+import type { Profile, StudentProgress, DailyTask } from "@/lib/types";
 
 // Uzbekistan is UTC+5 (no DST) — give a correct time-of-day greeting.
 function greeting(): string {
@@ -16,7 +17,8 @@ function greeting(): string {
 export async function StudentDashboard({ profile }: { profile: Profile }) {
   const supabase = await createClient();
 
-  const [{ data: progressRaw }, { data: evalsRaw }] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10);
+  const [{ data: progressRaw }, { data: evalsRaw }, { data: tasksRaw }] = await Promise.all([
     supabase.rpc("student_progress"),
     supabase
       .from("evaluations")
@@ -24,6 +26,12 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
       .eq("student_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(200),
+    supabase
+      .from("daily_tasks")
+      .select("id, title, tool, done, task_date, created_at")
+      .eq("student_id", profile.id)
+      .eq("task_date", today)
+      .order("created_at", { ascending: true }),
   ]);
 
   const progress = (progressRaw as StudentProgress | null) ?? null;
@@ -33,12 +41,7 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
   const bestBand = evals.length ? Math.max(...evals.map((e) => Number(e.overall_band) || 0)) : null;
   const latestTarget = evals[0]?.result?.target_band ?? (bestBand ? Math.min(bestBand + 0.5, 9) : null);
 
-  const now = Date.now();
-  const weekAgo = now - 7 * 864e5;
-  const todayStart = new Date(); todayStart.setUTCHours(0, 0, 0, 0);
-  const weekCount = evals.filter((e) => new Date(e.created_at).getTime() >= weekAgo).length;
-  const todayCount = evals.filter((e) => new Date(e.created_at).getTime() >= todayStart.getTime()).length;
-
+  const tasks = (tasksRaw as DailyTask[] | null) ?? [];
   const xp = evals.length * 20 + streak * 15;
   const level = Math.floor(xp / 100) + 1;
   const first = (profile.full_name || profile.email || "do‘st").split(/[ @]/)[0];
@@ -71,16 +74,8 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
         <StatPill icon={Zap} tone="indigo" value={xp} label={`Daraja ${level}`} />
       </section>
 
-      {/* Daily goal */}
-      <section className="card space-y-3 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <CalendarCheck className="h-4 w-4 text-primary-soft" /> Bugungi maqsad
-        </div>
-        <XpBar value={todayCount} max={3} label="3 ta mashq bajaring" />
-        <p className="text-xs text-subtle">
-          Bu hafta: <span className="font-semibold text-fg">{weekCount}</span> mashq · davom eting!
-        </p>
-      </section>
+      {/* Daily plan — set by the student via Maga */}
+      <DailyPlan initial={tasks} />
 
       {/* AI tools — the stars */}
       <section className="space-y-3">

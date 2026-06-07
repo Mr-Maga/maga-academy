@@ -600,3 +600,58 @@ The input may be Uzbek, Russian or English. Return:
 - source: the detected input language ("uz", "ru" or "en").`;
   return geminiJSON<VocabTranslation>({ prompt, schema, system: MAGA_CORE, temperature: 0.3 });
 }
+
+/* ----------------- Daily planner (Maga turns text into tasks) ----------------- */
+
+export interface PlannedTask {
+  title: string;
+  tool: "writing" | "speaking" | "vocab" | "exercises" | "reading" | "listening" | null;
+}
+
+/**
+ * Turn a student's free-text intent ("bugun Task 2 va 10 ta yangi so'z qilaman")
+ * into a short, concrete checklist of IELTS study tasks. Each task may map to an
+ * in-app tool so the dashboard can deep-link it.
+ */
+export async function planTasks(text: string): Promise<PlannedTask[]> {
+  const schema = {
+    type: "OBJECT",
+    properties: {
+      tasks: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            title: { type: "STRING" },
+            tool: { type: "STRING", enum: ["writing", "speaking", "vocab", "exercises", "reading", "listening", "none"] },
+          },
+          required: ["title", "tool"],
+        },
+      },
+    },
+    required: ["tasks"],
+  };
+  const prompt = `A student tells you what they want to study today (in Uzbek, Russian or English):
+"${text}"
+
+Turn it into a SHORT checklist of 1–6 concrete, doable IELTS study tasks.
+- Each "title" must be specific and motivating, written in English, max ~6 words (e.g. "Writing Task 2 essay", "Learn 10 new words", "Speaking Part 2 answer").
+- Set "tool" to the matching app tool: writing, speaking, vocab (vocabulary), exercises (reading/grammar/vocab practice), reading, listening — or "none" if it doesn't map.
+- Do NOT invent tasks the student didn't imply. Split compound requests into separate tasks.
+Return JSON: { tasks: [{ title, tool }] }.`;
+
+  const res = await geminiJSON<{ tasks: { title: string; tool: string }[] }>({
+    prompt,
+    schema,
+    system: MAGA_CORE,
+    temperature: 0.2,
+  });
+  const allowed = ["writing", "speaking", "vocab", "exercises", "reading", "listening"];
+  return (res.tasks ?? [])
+    .map((t) => ({
+      title: String(t.title ?? "").trim().slice(0, 80),
+      tool: allowed.includes(t.tool) ? (t.tool as PlannedTask["tool"]) : null,
+    }))
+    .filter((t) => t.title)
+    .slice(0, 6);
+}

@@ -231,6 +231,17 @@ export interface VocabLookup {
   created_at: string;
 }
 
+// Daily study plan (set via the Maga planner)
+export type TaskTool = "writing" | "speaking" | "vocab" | "exercises" | "reading" | "listening";
+export interface DailyTask {
+  id: string;
+  title: string;
+  tool: TaskTool | null;
+  done: boolean;
+  task_date: string;
+  created_at: string;
+}
+
 // AI-generated practice exercises
 export type ExerciseType = "reading" | "grammar" | "vocabulary";
 export interface ExerciseQuestion {
