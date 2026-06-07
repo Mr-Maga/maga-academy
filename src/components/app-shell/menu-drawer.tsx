@@ -13,6 +13,8 @@ import {
   ClipboardList,
   TrendingUp,
   UserRound,
+  History,
+  Crown,
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
@@ -42,7 +44,9 @@ const SOON: Item[] = [
 
 const ACCOUNT: Item[] = [
   { href: "/progress", label: "Progress", icon: TrendingUp },
-  { href: "/account", label: "Account", icon: UserRound },
+  { href: "/history", label: "Test History", icon: History },
+  { href: "/pricing", label: "Plans", icon: Crown },
+  { href: "/account", label: "My Profile", icon: UserRound },
 ];
 
 export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {

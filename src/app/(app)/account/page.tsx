@@ -1,40 +1,42 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader, Card, Badge, LevelChip } from "@/components/ui";
+import { PageHeader, Card, Badge } from "@/components/ui";
 import { SignOutButton } from "@/components/sign-out-button";
-import { ROLE_LABELS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
+import { Achievements } from "@/components/achievements";
 import { AccountForm } from "./account-form";
+import { TargetBands } from "./target-bands";
 import { chooseLearningPath } from "@/app/onboarding/actions";
 
-export const metadata: Metadata = { title: "Account" };
+export const metadata: Metadata = { title: "My Profile" };
 
 export default async function AccountPage() {
   const profile = await requireActiveProfile();
+  const isStudent = profile.role === "student";
+  const initial = (profile.full_name || profile.email || "?").charAt(0).toUpperCase();
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Account" subtitle="Your profile and settings." />
+      <PageHeader title="My Profile" subtitle="Your profile, goals and settings." />
 
       <Card className="flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/15 text-lg font-bold text-primary-soft">
-          {(profile.full_name || profile.email || "?").charAt(0).toUpperCase()}
+        <div
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-bold text-bg"
+          style={{ backgroundImage: "linear-gradient(135deg, #2dd4bf, #14b8a6)" }}
+        >
+          {initial}
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold">{profile.full_name || "—"}</div>
           <div className="truncate text-sm text-muted">{profile.email}</div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <Badge tone="primary">{profile.role ? ROLE_LABELS[profile.role] : "—"}</Badge>
-          {profile.role === "student" && <LevelChip level={profile.level} />}
-        </div>
+        {isStudent && profile.learning_path && (
+          <Badge tone="teal">{profile.learning_path === "ielts" ? "IELTS" : "General"}</Badge>
+        )}
       </Card>
 
-      {profile.role === "student" && profile.access_expires_at && (
-        <p className="text-center text-xs text-subtle">
-          Access active until {formatDate(profile.access_expires_at)}
-        </p>
-      )}
+      {isStudent && <TargetBands targets={profile.target_bands ?? {}} />}
+
+      {isStudent && <Achievements studentId={profile.id} />}
 
       <AccountForm
         fullName={profile.full_name ?? ""}
@@ -42,9 +44,9 @@ export default async function AccountPage() {
         dailyGoal={profile.daily_goal ?? 20}
       />
 
-      {profile.role === "student" && (
+      {isStudent && (
         <Card className="space-y-3">
-          <div className="text-sm font-semibold">O‘quv yo‘nalishi</div>
+          <div className="text-sm font-semibold">Learning track</div>
           <div className="grid grid-cols-2 gap-2">
             {([
               ["ielts", "🎓 IELTS"],

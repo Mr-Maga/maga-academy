@@ -22,9 +22,8 @@ export function AccountForm({
         <input id="full_name" name="full_name" defaultValue={fullName} className="input" placeholder="Ism Familiya" />
       </div>
       <div>
-        <label className="label" htmlFor="phone">Phone (for the centre to contact you)</label>
+        <label className="label" htmlFor="phone">Phone (optional)</label>
         <input id="phone" name="phone" type="tel" defaultValue={phone} className="input" placeholder="+998 90 123 45 67" />
-        <p className="mt-1 text-xs text-subtle">We only collect your number — there is no SMS login.</p>
       </div>
       <div>
         <label className="label" htmlFor="daily_goal">Daily practice goal (minutes)</label>

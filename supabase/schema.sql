@@ -43,6 +43,7 @@ create table if not exists public.profiles (
   daily_goal int not null default 20,
   code_claimed boolean not null default false,
   learning_path text check (learning_path in ('ielts','general')),
+  target_bands jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 

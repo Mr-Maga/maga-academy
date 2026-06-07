@@ -25,3 +25,27 @@ export async function updateAccount(_prev: AccountState, formData: FormData): Pr
   revalidatePath("/account");
   return { ok: true };
 }
+
+const SKILLS = ["listening", "reading", "writing", "speaking"] as const;
+
+/** Save the student's target band per skill (0.5 steps, 4.0–9.0). */
+export async function updateTargetBands(_prev: AccountState, formData: FormData): Promise<AccountState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again." };
+
+  const targets: Record<string, number> = {};
+  for (const s of SKILLS) {
+    const v = Number(formData.get(s));
+    if (v >= 4 && v <= 9) targets[s] = Math.round(v * 2) / 2;
+  }
+
+  const { error } = await supabase.from("profiles").update({ target_bands: targets }).eq("id", user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/account");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}

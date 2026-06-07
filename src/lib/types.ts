@@ -43,6 +43,7 @@ export interface Profile {
   daily_goal: number;
   code_claimed: boolean;
   learning_path: LearningPath | null;
+  target_bands: Record<string, number> | null;
   created_at: string;
 }
 
