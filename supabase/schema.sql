@@ -843,3 +843,26 @@ drop policy if exists daily_tasks_update on public.daily_tasks;
 create policy daily_tasks_update on public.daily_tasks for update using (student_id = auth.uid()) with check (student_id = auth.uid());
 drop policy if exists daily_tasks_delete on public.daily_tasks;
 create policy daily_tasks_delete on public.daily_tasks for delete using (student_id = auth.uid());
+
+-- ----------------------------------------------------------------------------
+-- reading_attempts: results of AI-generated IELTS Reading tests (auto-graded).
+-- RLS: students manage their own; staff may read.
+-- ----------------------------------------------------------------------------
+create table if not exists public.reading_attempts (
+  id          uuid primary key default gen_random_uuid(),
+  student_id  uuid not null references public.profiles(id) on delete cascade,
+  title       text,
+  score       int not null,
+  total       int not null,
+  band        numeric(3,1) not null,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_reading_attempts_student on public.reading_attempts(student_id, created_at desc);
+
+alter table public.reading_attempts enable row level security;
+
+drop policy if exists reading_attempts_select on public.reading_attempts;
+create policy reading_attempts_select on public.reading_attempts for select using (student_id = auth.uid() or public.is_staff());
+drop policy if exists reading_attempts_insert on public.reading_attempts;
+create policy reading_attempts_insert on public.reading_attempts for insert with check (student_id = auth.uid());

@@ -31,6 +31,7 @@ type Item = {
 const TOOLS: Item[] = [
   { href: "/writing", label: "Writing", icon: PenLine },
   { href: "/speaking", label: "Speaking", icon: Mic },
+  { href: "/reading", label: "Reading", icon: BookOpenText, badge: "New" },
   { href: "/vocab", label: "Vocabulary", icon: Library },
   { href: "/exercises", label: "Practice", icon: Brain },
   { href: "/teacher", label: "AI Tutor", icon: Bot },
@@ -38,7 +39,6 @@ const TOOLS: Item[] = [
 
 const SOON: Item[] = [
   { href: "#", label: "Listening", icon: Headphones, badge: "Soon" },
-  { href: "#", label: "Reading", icon: BookOpenText, badge: "Soon" },
   { href: "#", label: "Mock Exam", icon: ClipboardList, badge: "Soon" },
 ];
 

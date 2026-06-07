@@ -243,6 +243,29 @@ export interface DailyTask {
   created_at: string;
 }
 
+// AI-generated IELTS Reading test (auto-graded)
+export type ReadingQType = "tfng" | "mcq" | "gap";
+export interface ReadingQuestion {
+  type: ReadingQType;
+  prompt: string;
+  options: string[]; // empty for "gap"
+  answer: string;
+  explanation: string;
+}
+export interface ReadingTest {
+  title: string;
+  passage: string;
+  questions: ReadingQuestion[];
+}
+export interface ReadingAttempt {
+  id: string;
+  title: string | null;
+  score: number;
+  total: number;
+  band: number;
+  created_at: string;
+}
+
 // AI-generated practice exercises
 export type ExerciseType = "reading" | "grammar" | "vocabulary";
 export interface ExerciseQuestion {

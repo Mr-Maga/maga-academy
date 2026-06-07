@@ -87,6 +87,9 @@ export async function StudentDashboard({ profile }: { profile: Profile }) {
           <Link href="/speaking" className="block">
             <ActionTile emoji="🎙️" title="Speaking" subtitle="Speak, get your band" from="indigo" />
           </Link>
+          <Link href="/reading" className="block">
+            <ActionTile emoji="📖" title="Reading" subtitle="AI tests + band" from="rose" />
+          </Link>
           <Link href="/vocab" className="block">
             <ActionTile emoji="📇" title="Vocabulary" subtitle="Flashcards + AI translator" from="teal" />
           </Link>

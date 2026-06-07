@@ -1,5 +1,5 @@
 import "server-only";
-import type { AiEvaluation, Exercise, ExerciseType, VocabTranslation } from "./types";
+import type { AiEvaluation, Exercise, ExerciseType, VocabTranslation, ReadingTest } from "./types";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
@@ -654,4 +654,65 @@ Return JSON: { tasks: [{ title, tool }] }.`;
     }))
     .filter((t) => t.title)
     .slice(0, 6);
+}
+
+/* ----------------- IELTS Reading test generator ----------------- */
+
+const READING_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    title: { type: "STRING" },
+    passage: { type: "STRING" },
+    questions: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          type: { type: "STRING", enum: ["tfng", "mcq", "gap"] },
+          prompt: { type: "STRING" },
+          options: { type: "ARRAY", items: { type: "STRING" } },
+          answer: { type: "STRING" },
+          explanation: { type: "STRING" },
+        },
+        required: ["type", "prompt", "options", "answer", "explanation"],
+      },
+    },
+  },
+  required: ["title", "passage", "questions"],
+} as const;
+
+/** Generate a fresh, auto-gradable IELTS Academic Reading test. */
+export async function generateReadingTest(): Promise<ReadingTest> {
+  const prompt = `Create ONE original IELTS Academic Reading practice test.
+
+PASSAGE:
+- A factual, academic-style passage of 550–750 words with a clear title.
+- Natural, varied paragraphs. Do NOT copy any real article. ${varietyHint()}
+
+QUESTIONS — exactly 12, auto-gradable, in passage order, mixing these types:
+- "tfng": a statement to judge — options MUST be exactly ["True","False","Not Given"]; answer is one of them.
+- "mcq": a question with exactly 4 plausible options; answer is the FULL text of the correct option.
+- "gap": sentence completion using NO MORE THAN TWO WORDS taken directly from the passage; options = []; answer is those exact word(s).
+
+Rules:
+- Answers must be unambiguously decidable from the passage (except "Not Given", which must genuinely be absent).
+- Include a mix: ~4 tfng, ~4 mcq, ~4 gap.
+- For each question add a one-sentence "explanation" pointing to the evidence.
+Return JSON: { title, passage, questions:[{type, prompt, options, answer, explanation}] }.`;
+
+  const res = await geminiJSON<ReadingTest>({
+    prompt,
+    schema: READING_SCHEMA,
+    system: MAGA_CORE,
+    temperature: 0.7,
+    thinking: 1024,
+  });
+  res.questions = (res.questions ?? []).slice(0, 13).map((q) => ({
+    type: q.type,
+    prompt: String(q.prompt ?? "").trim(),
+    options: Array.isArray(q.options) ? q.options : [],
+    answer: String(q.answer ?? "").trim(),
+    explanation: String(q.explanation ?? "").trim(),
+  }));
+  return res;
 }
