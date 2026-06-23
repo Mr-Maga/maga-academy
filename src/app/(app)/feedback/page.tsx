@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MessageSquare, CheckCircle2, RotateCcw } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Card, Badge, EmptyState } from "@/components/ui";
+import { PageHeader, Card, Badge, EmptyState } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { isStaff } from "@/lib/constants";
 import { formatDateTime } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader, Card, Badge } from "@/components/ui";
+import { PageHeader, Card, Badge } from "@/components/legacy-ui";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Achievements } from "@/components/achievements";
 import { AccountForm } from "./account-form";

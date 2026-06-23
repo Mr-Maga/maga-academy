@@ -11,7 +11,7 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Card, LinkCard, StatCard } from "@/components/ui";
+import { Card, LinkCard, StatCard } from "@/components/legacy-ui";
 import { formatDate } from "@/lib/utils";
 import type { Feedback, Profile } from "@/lib/types";
 

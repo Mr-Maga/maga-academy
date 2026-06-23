@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Card } from "@/components/ui";
+import { PageHeader, Card } from "@/components/legacy-ui";
 import type { Group } from "@/lib/types";
 import { MaterialForm } from "./material-form";
 

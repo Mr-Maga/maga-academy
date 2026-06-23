@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader, LevelChip } from "@/components/ui";
+import { PageHeader, LevelChip } from "@/components/legacy-ui";
 import { SKILLS, isStaff, levelLabel } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "Skills" };

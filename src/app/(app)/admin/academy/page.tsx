@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/dal";
 import { getAcademyInfo } from "@/lib/settings";
-import { PageHeader, Card } from "@/components/ui";
+import { PageHeader, Card } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { updateAcademy } from "../actions";
 

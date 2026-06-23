@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus, FolderOpen } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, EmptyState } from "@/components/ui";
+import { PageHeader, EmptyState } from "@/components/legacy-ui";
 import { MaterialItem } from "@/components/material-item";
 import { signedUrls } from "@/lib/storage";
 import type { Material } from "@/lib/types";

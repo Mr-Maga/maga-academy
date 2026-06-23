@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import type { VocabCard, VocabStats, VocabSet, VocabLookup } from "@/lib/types";
 import { VocabClient } from "./vocab-client";
 

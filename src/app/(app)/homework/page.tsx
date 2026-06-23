@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus, ClipboardList, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Badge, EmptyState, LevelChip } from "@/components/ui";
+import { PageHeader, Badge, EmptyState, LevelChip } from "@/components/legacy-ui";
 import { isStaff, levelLabel } from "@/lib/constants";
 import { relativeDue } from "@/lib/utils";
 import type { Homework, Submission } from "@/lib/types";

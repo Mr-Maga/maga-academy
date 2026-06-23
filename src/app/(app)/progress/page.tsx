@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, UserRound } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, EmptyState, LevelChip } from "@/components/ui";
+import { PageHeader, EmptyState, LevelChip } from "@/components/legacy-ui";
 import { ProgressView } from "@/components/progress-view";
 import { isStaff } from "@/lib/constants";
 import type { Profile } from "@/lib/types";

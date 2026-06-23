@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { UserCheck, Users, GraduationCap, MessageSquare, FolderPlus, ClipboardCheck, Building2, Lightbulb } from "lucide-react";
 import { requireRole } from "@/lib/dal";
-import { PageHeader, LinkCard } from "@/components/ui";
+import { PageHeader, LinkCard } from "@/components/legacy-ui";
 
 export const metadata: Metadata = { title: "Manage" };
 

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Trophy, Medal } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, EmptyState, LevelChip, Badge } from "@/components/ui";
+import { PageHeader, EmptyState, LevelChip, Badge } from "@/components/legacy-ui";
 import { isStaff, LEVELS, levelLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { LeaderboardRow, LevelKey } from "@/lib/types";

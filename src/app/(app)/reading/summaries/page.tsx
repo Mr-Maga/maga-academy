@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, BookMarked, Zap, BookOpenText } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 
 export const metadata: Metadata = { title: "Book Summaries" };
 

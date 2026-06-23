@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import { ExercisesClient } from "./exercises-client";
 
 export const metadata: Metadata = { title: "AI Practice" };

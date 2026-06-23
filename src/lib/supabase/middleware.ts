@@ -6,6 +6,8 @@ const PUBLIC_PREFIXES = ["/login", "/auth", "/legal"];
 
 function isPublic(pathname: string): boolean {
   if (pathname === "/") return true;
+  // Design-system preview — dev only, never exposed in production.
+  if (process.env.NODE_ENV !== "production" && pathname.startsWith("/_kitchen-sink")) return true;
   return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 

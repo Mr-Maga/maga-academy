@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PenLine, Mic, BarChart3 } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, EmptyState } from "@/components/ui";
+import { PageHeader, EmptyState } from "@/components/legacy-ui";
 import type { EvalKind } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Test History" };

@@ -1,5 +1,5 @@
 import { FileDown, Video, Trash2, Headphones } from "lucide-react";
-import { Badge, LevelChip } from "@/components/ui";
+import { Badge, LevelChip } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { SKILL_MAP } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";

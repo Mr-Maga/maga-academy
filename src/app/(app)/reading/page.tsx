@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import { piecesByKind } from "@/lib/reading-content";
 
 export const metadata: Metadata = { title: "Reading" };

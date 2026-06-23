@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Users, TrendingUp, Plus } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Card, EmptyState, LevelChip } from "@/components/ui";
+import { PageHeader, Card, EmptyState, LevelChip } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { SKILLS, levelLabel } from "@/lib/constants";
 import type { Group, Profile } from "@/lib/types";

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Trash2, FileDown, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { Card, Badge, LevelChip } from "@/components/ui";
+import { Card, Badge, LevelChip } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { isStaff, levelLabel, SKILL_MAP } from "@/lib/constants";
 import { relativeDue, formatDateTime } from "@/lib/utils";

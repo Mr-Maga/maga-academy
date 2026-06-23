@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Compass } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader, Card } from "@/components/ui";
+import { PageHeader, Card } from "@/components/legacy-ui";
 import { PlacementClient } from "./placement-client";
 
 export const metadata: Metadata = { title: "Placement test" };

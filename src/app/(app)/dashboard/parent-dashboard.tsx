@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Flame, ClipboardList, TrendingUp, UserRound, ArrowRight, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Card, EmptyState, LevelChip } from "@/components/ui";
+import { Card, EmptyState, LevelChip } from "@/components/legacy-ui";
 import { SKILL_MAP } from "@/lib/constants";
 import type { Profile, StudentProgress } from "@/lib/types";
 

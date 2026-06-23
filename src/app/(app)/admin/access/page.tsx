@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckCircle2, Clock, Lock } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Badge, LevelChip, EmptyState } from "@/components/ui";
+import { PageHeader, Badge, LevelChip, EmptyState } from "@/components/legacy-ui";
 import { SubmitButton } from "@/components/form-controls";
 import { ROLE_LABELS } from "@/lib/constants";
 import { formatDate, daysUntil } from "@/lib/utils";

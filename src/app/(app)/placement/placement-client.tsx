@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mic, Square, CheckCircle2, ArrowRight, Trophy } from "lucide-react";
 import { PLACEMENT_ITEMS, scorePlacement, type PlacementResult } from "@/lib/placement";
 import { LEVEL_MAP } from "@/lib/constants";
-import { LevelChip } from "@/components/ui";
+import { LevelChip } from "@/components/legacy-ui";
 import { cn } from "@/lib/utils";
 import { savePlacement } from "./actions";
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, LevelChip } from "@/components/ui";
+import { PageHeader, LevelChip } from "@/components/legacy-ui";
 import { ProgressView } from "@/components/progress-view";
 import type { Profile } from "@/lib/types";
 

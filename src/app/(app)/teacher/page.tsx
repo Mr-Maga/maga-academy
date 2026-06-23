@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import { TeacherChat } from "./teacher-chat";
 
 export const metadata: Metadata = { title: "AI Teacher" };

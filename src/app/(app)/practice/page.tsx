@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Flame, Target } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, StatCard } from "@/components/ui";
+import { PageHeader, StatCard } from "@/components/legacy-ui";
 import { AutoSubmitSelect } from "@/components/form-controls";
 import type { Streak } from "@/lib/types";
 import { PracticeClient } from "./practice-client";

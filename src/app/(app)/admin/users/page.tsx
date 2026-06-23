@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GraduationCap, Link2, UserRound, X } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Card, Badge, EmptyState } from "@/components/ui";
+import { PageHeader, Card, Badge, EmptyState } from "@/components/legacy-ui";
 import { AutoSubmitSelect, SubmitButton } from "@/components/form-controls";
 import { LEVELS, ROLE_LABELS } from "@/lib/constants";
 import type { Profile } from "@/lib/types";

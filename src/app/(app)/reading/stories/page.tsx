@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import { LibraryBrowser, type LibraryCard } from "@/components/reading/library-browser";
 import { piecesByKind, readMinutes, wordCount } from "@/lib/reading-content";
 

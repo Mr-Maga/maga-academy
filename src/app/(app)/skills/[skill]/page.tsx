@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { ArrowLeft, BookOpen, Sparkles, ArrowRight } from "lucide-react";
 import { requireActiveProfile } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, EmptyState } from "@/components/ui";
+import { PageHeader, EmptyState } from "@/components/legacy-ui";
 import { MaterialItem } from "@/components/material-item";
 import { signedUrls } from "@/lib/storage";
 import { SKILL_MAP, isStaff } from "@/lib/constants";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireActiveProfile } from "@/lib/dal";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/legacy-ui";
 import { SpeakingClient } from "./speaking-client";
 import { EvaluationHistory } from "@/components/evaluation-history";
 

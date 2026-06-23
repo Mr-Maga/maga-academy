@@ -1,6 +1,6 @@
 import { Users, ClipboardCheck, FolderPlus, Trophy, AlertTriangle, GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Card, LinkCard, StatCard } from "@/components/ui";
+import { Card, LinkCard, StatCard } from "@/components/legacy-ui";
 import { levelLabel } from "@/lib/constants";
 import type { Group, Profile } from "@/lib/types";
 

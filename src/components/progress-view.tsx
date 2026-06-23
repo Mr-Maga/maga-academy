@@ -1,6 +1,6 @@
 import { Flame, ClipboardList, Target, TrendingDown, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { StatCard, Card, EmptyState, Badge } from "@/components/ui";
+import { StatCard, Card, EmptyState, Badge } from "@/components/legacy-ui";
 import { SKILL_MAP } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import type { ProgressPoint, Score, StudentProgress } from "@/lib/types";

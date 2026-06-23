@@ -1,5 +1,5 @@
 import { CheckCircle2, ArrowUpRight, Sparkles, TrendingUp } from "lucide-react";
-import { Card } from "@/components/ui";
+import { Card } from "@/components/legacy-ui";
 import type { AiEvaluation } from "@/lib/types";
 
 function bandColor(band: number): string {

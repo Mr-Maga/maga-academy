@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Users, Plus, Trash2, CalendarClock } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Card, LevelChip, EmptyState } from "@/components/ui";
+import { PageHeader, Card, LevelChip, EmptyState } from "@/components/legacy-ui";
 import { AutoSubmitSelect, SubmitButton } from "@/components/form-controls";
 import { LEVELS, levelLabel } from "@/lib/constants";
 import type { Group, Profile } from "@/lib/types";
