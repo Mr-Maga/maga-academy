@@ -1,55 +1,60 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   maga — design system v3 · "Obsidian"
-   Near-black canvas · layered glass · one ownable accent (Iris) · warm Amber
-   for earned moments. Dark done at the level of Linear / Vercel / Raycast.
-   Tailwind v4: tokens in @theme become utilities
-   (--color-primary -> bg-primary / text-primary / border-primary).
-   Note: @apply cannot reference custom component classes — base utilities are
-   inlined per variant on purpose.
+   maga — design system v3.1 · "Aurora Obsidian"
+   Deep space-obsidian canvas + a confident cool combination:
+   violet (primary) + cyan/teal + indigo + pink, amber for earned moments.
+   Tailwind v4: tokens in @theme become utilities (--color-x -> bg-x / text-x).
+   @apply cannot reference custom component classes — base utilities inlined.
    ========================================================================== */
 
 @theme {
-  /* ---- Canvas: obsidian, neutral-cool, layered (lighter = higher) -------- */
-  --color-bg:       #0A0A0D;
-  --color-surface:  #101014;
-  --color-card:     #16161C;
-  --color-elevated: #1E1E26;
-  --color-input:    #131318;
+  /* ---- Canvas: obsidian with a faint blue-violet depth (lighter = higher) - */
+  --color-bg:       #08080F;
+  --color-surface:  #0E0E18;
+  --color-card:     #14141F;
+  --color-elevated: #1D1D2B;
+  --color-input:    #12121C;
 
-  /* ---- Hairlines & highlights (rgba, never solid grey) ------------------- */
+  /* ---- Hairlines & highlights ------------------------------------------- */
   --color-border:        rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
   --color-highlight:     rgba(255, 255, 255, 0.06);
 
-  /* ---- Text: high contrast, never pure white on pure black --------------- */
-  --color-fg:     #F4F4F6;
-  --color-muted:  #A1A1AD;
-  --color-subtle: #6B6B78;
+  /* ---- Text ------------------------------------------------------------- */
+  --color-fg:     #F5F5F8;
+  --color-muted:  #A6A6B6;
+  --color-subtle: #6C6C80;
 
-  /* ---- Brand: Iris (ownable). Swap the hue, keep the structure. ---------- */
-  --color-primary:      #7B61FF;
+  /* ---- Brand: violet primary -------------------------------------------- */
+  --color-primary:      #7C5CFF;
   --color-primary-fg:   #FFFFFF;
   --color-primary-soft: #A78BFA;
-  --color-primary-dim:  rgba(123, 97, 255, 0.16);
+  --color-primary-dim:  rgba(124, 92, 255, 0.16);
 
-  /* ---- Energy / achievement: warm Amber (streak, XP, NEW, celebrate) ----- */
-  --color-amber: #FFB020;
+  /* ---- Supporting cool accents (the richer combination) ----------------- */
+  --color-cyan:   #22D3EE;
+  --color-teal:   #2DD4BF;
+  --color-indigo: #818CF8;
+  --color-sky:    #60A5FA;
+  --color-pink:   #E879F9;
+
+  /* ---- Energy / achievement: warm amber --------------------------------- */
+  --color-amber: #FBBF24;
   --color-gold:  #F5C56B;
 
-  /* ---- Functional only (never decorative) ------------------------------- */
+  /* ---- Functional ------------------------------------------------------- */
   --color-success: #34D399;
   --color-danger:  #FB7185;
   --color-info:    #60A5FA;
 
-  /* ---- CEFR level accents (small tints, not full backgrounds) ----------- */
+  /* ---- CEFR level accents ----------------------------------------------- */
   --color-level-a1: #34D399;
   --color-level-a2: #22D3EE;
   --color-level-b1: #60A5FA;
-  --color-level-b2: #7B61FF;
-  --color-level-c1: #F472B6;
-  --color-level-c2: #FFB020;
+  --color-level-b2: #7C5CFF;
+  --color-level-c1: #E879F9;
+  --color-level-c2: #FBBF24;
 
   /* ---- Type ------------------------------------------------------------- */
   --font-display: var(--font-display), "General Sans", ui-sans-serif, system-ui, sans-serif;
@@ -63,68 +68,49 @@
   --radius-full: 9999px;
 
   /* ---- Motion tokens ---------------------------------------------------- */
-  --animate-fade-up:   fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-pop:       pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  --animate-shimmer:   shimmer 2.2s linear infinite;
-  --animate-flame:     flame 1.8s ease-in-out infinite;
-  --animate-ring-draw: ring-draw 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-up:    fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop:        pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-shimmer:    shimmer 2.4s linear infinite;
+  --animate-flame:      flame 1.8s ease-in-out infinite;
+  --animate-ring-draw:  ring-draw 1s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
-/* ---- Easing helpers (for inline use) ------------------------------------ */
 :root {
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
-  --shadow-ambient: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
-  --shadow-glow:    0 8px 30px -8px rgba(123, 97, 255, 0.5);
+  --shadow-ambient: 0 14px 44px -18px rgba(0, 0, 0, 0.75);
+  --shadow-glow:    0 10px 34px -10px rgba(124, 92, 255, 0.55);
+  /* Signature multi-hue cool gradient — cyan -> indigo -> violet -> pink */
+  --gradient-brand: linear-gradient(110deg, #34E0E0 0%, #5BB8F5 26%, #818CF8 50%, #A78BFA 72%, #E879F9 100%);
+  --gradient-cta:   linear-gradient(120deg, #3DDCEC 0%, #7C5CFF 60%, #A78BFA 100%);
+  --gradient-amber: linear-gradient(135deg, #FBBF24, #F5C56B);
   color-scheme: dark;
 }
 
 /* ============================================================================
    Keyframes
    ========================================================================== */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes pop {
-  0%   { opacity: 0; transform: scale(0.92); }
-  100% { opacity: 1; transform: scale(1); }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes flame {
-  0%, 100% { transform: scale(1) rotate(-1.5deg); opacity: 1; }
-  50%      { transform: scale(1.1) rotate(1.5deg); opacity: 0.9; }
-}
-@keyframes ring-draw {
-  from { stroke-dashoffset: var(--ring-circ, 1000); }
-}
-@keyframes pulse-ring {
-  0%   { transform: scale(0.9); opacity: 0.7; }
-  70%  { transform: scale(1.6); opacity: 0; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-@keyframes count {
-  from { opacity: 0; transform: translateY(0.4em); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes draw-check {
-  to { stroke-dashoffset: 0; }
-}
-@keyframes confetti-fall {
-  0%   { transform: translateY(-10%) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(120%) rotate(540deg); opacity: 0; }
-}
+@keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pop { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes flame { 0%, 100% { transform: scale(1) rotate(-1.5deg); opacity: 1; } 50% { transform: scale(1.1) rotate(1.5deg); opacity: 0.9; } }
+@keyframes ring-draw { from { stroke-dashoffset: var(--ring-circ, 1000); } }
+@keyframes pulse-ring { 0% { transform: scale(0.9); opacity: 0.7; } 70% { transform: scale(1.6); opacity: 0; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes count { from { opacity: 0; transform: translateY(0.4em); } to { opacity: 1; transform: translateY(0); } }
+@keyframes draw-check { to { stroke-dashoffset: 0; } }
+@keyframes confetti-fall { 0% { transform: translateY(-10%) rotate(0deg); opacity: 1; } 100% { transform: translateY(120%) rotate(540deg); opacity: 0; } }
+/* Background motion */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes glyph-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-22px); } }
+@keyframes drift { 0% { transform: translate(0, 0); } 50% { transform: translate(14px, -10px); } 100% { transform: translate(0, 0); } }
+@keyframes twinkle { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.95; } }
+@keyframes float-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 /* ============================================================================
    Base
    ========================================================================== */
-html {
-  -webkit-tap-highlight-color: transparent;
-}
+html { -webkit-tap-highlight-color: transparent; }
 
 body {
   background-color: var(--color-bg);
@@ -134,95 +120,62 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* One restrained ambient glow behind the app (Iris, very low alpha). */
+/* Ambient: violet right + teal left, low alpha (used app-wide). */
 .ambient {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
-    radial-gradient(40rem 30rem at 50% -12%, rgba(123, 97, 255, 0.14), transparent 60%);
+    radial-gradient(42rem 32rem at 82% 8%, rgba(124, 92, 255, 0.16), transparent 60%),
+    radial-gradient(34rem 30rem at 8% 30%, rgba(34, 211, 238, 0.10), transparent 60%);
   background-attachment: fixed;
 }
 
-/* Subtle film grain (~2.5%) — the cheapest "this looks designed" upgrade. */
+/* Subtle film grain (~2.5%) — kills banding, adds craft. */
 .grain {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.025;
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 120px 120px;
 }
 
-/* App content sits above grain/ambient. */
-body > *:not(.grain):not(.ambient) {
-  position: relative;
-  z-index: 2;
-}
+body > *:not(.grain):not(.ambient) { position: relative; z-index: 2; }
 
-/* Slim, on-brand scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) transparent;
-}
+* { scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
 *::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: 9999px;
-}
+*::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 9999px; }
 *::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
-
-/* Selection */
-::selection { background: var(--color-primary-dim); color: var(--color-fg); }
+::selection { background: rgba(124, 92, 255, 0.28); color: var(--color-fg); }
 
 /* ============================================================================
    Component recipes
    ========================================================================== */
 @layer components {
-
-  /* ---- Glass: the signature surface (lift + hairline + inner light + shadow) */
   .glass {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2xl);
-    box-shadow:
-      inset 0 1px 0 var(--color-highlight),
-      0 12px 40px -16px rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(12px) saturate(120%);
+    box-shadow: inset 0 1px 0 var(--color-highlight), 0 14px 44px -18px rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(14px) saturate(125%);
   }
-
-  /* Plain card (opaque, layered) */
   .card {
     background-color: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2xl);
     box-shadow: inset 0 1px 0 var(--color-highlight), var(--shadow-ambient);
   }
-
-  /* Interactive surface: lifts 2px + hairline brightens on hover */
-  .card-i {
-    transition: transform 0.2s var(--ease-out-quint), border-color 0.2s, box-shadow 0.2s;
-  }
-  .card-i:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-border-strong);
-  }
+  .card-i { transition: transform 0.25s var(--ease-out-quint), border-color 0.25s, box-shadow 0.25s; }
+  .card-i:hover { transform: translateY(-3px); border-color: var(--color-border-strong); }
   .card-i:active { transform: scale(0.99); }
 
-  /* ---- Buttons (base inlined per variant — Tailwind v4 @apply rule) ------ */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     font-family: var(--font-sans);
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
-    color: var(--color-primary-fg);
-    background-image: linear-gradient(135deg, #7B61FF 0%, #9D7BFF 45%, #C084FC 100%);
-    box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    color: #0A0A12;
+    background-image: var(--gradient-cta);
+    box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   }
-  .btn-primary:hover { box-shadow: 0 10px 36px -8px rgba(123, 97, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+  .btn-primary:hover { box-shadow: 0 12px 40px -8px rgba(124, 92, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     color: var(--color-fg);
@@ -232,35 +185,23 @@ body > *:not(.grain):not(.ambient) {
   .btn-ghost:hover { background-color: rgba(255, 255, 255, 0.07); border-color: var(--color-border-strong); }
   .btn-subtle {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
-    color: var(--color-muted);
-    background-color: transparent;
+    color: var(--color-muted); background-color: transparent;
   }
   .btn-subtle:hover { color: var(--color-fg); background-color: rgba(255, 255, 255, 0.04); }
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
-    color: #fff;
-    background-image: linear-gradient(135deg, #FB7185, #F43F5E);
+    color: #fff; background-image: linear-gradient(135deg, #FB7185, #F43F5E);
     box-shadow: 0 8px 30px -10px rgba(244, 63, 94, 0.5);
   }
 
-  /* ---- Inputs ----------------------------------------------------------- */
   .input {
     @apply w-full rounded-xl px-4 py-3 outline-none transition;
-    color: var(--color-fg);
-    background-color: var(--color-input);
-    border: 1px solid var(--color-border);
+    color: var(--color-fg); background-color: var(--color-input); border: 1px solid var(--color-border);
   }
   .input::placeholder { color: var(--color-subtle); }
-  .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-dim);
-  }
-  .label {
-    @apply mb-1.5 block text-sm font-medium;
-    color: var(--color-muted);
-  }
+  .input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-dim); }
+  .label { @apply mb-1.5 block text-sm font-medium; color: var(--color-muted); }
 
-  /* ---- Chips / badges --------------------------------------------------- */
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
     font-variant-numeric: tabular-nums;
@@ -268,69 +209,54 @@ body > *:not(.grain):not(.ambient) {
 }
 
 /* ============================================================================
-   Helpers (outside @layer so they always win where intended)
+   Helpers
    ========================================================================== */
-
-/* Display type helper */
 .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
-
-/* Tabular numerals — scores, bands, timers, money must not jitter */
 .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
-/* Brand gradient text — hero numbers / key titles only, used sparingly */
 .text-gradient {
-  background-image: linear-gradient(135deg, #7B61FF 0%, #9D7BFF 45%, #C084FC 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .text-gradient-amber {
-  background-image: linear-gradient(135deg, #FFB020 0%, #F5C56B 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background-image: var(--gradient-amber);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-/* Focus-visible ring — clearly visible, primary at full strength */
 .focus-ring:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
 }
 
-/* Animated XP / progress fill with moving sheen */
+/* Animated progress fill with moving sheen (multi-hue) */
 .bar-fill {
-  background-image: linear-gradient(90deg, #7B61FF, #A78BFA 50%, #C084FC);
+  background-image: linear-gradient(90deg, #22D3EE, #818CF8 45%, #A78BFA 75%, #E879F9);
   background-size: 200% 100%;
   animation: var(--animate-shimmer);
 }
 
-/* Skeleton shimmer */
-.skeleton {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-}
+.skeleton { position: relative; overflow: hidden; background: rgba(255, 255, 255, 0.05); }
 .skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
   animation: shimmer-skel 1.4s infinite;
 }
 @keyframes shimmer-skel { 100% { transform: translateX(100%); } }
 
-/* Stagger helper for entrance animations */
-.stagger > * { animation: var(--animate-fade-up); }
-.stagger > *:nth-child(2)  { animation-delay: 0.05s; }
-.stagger > *:nth-child(3)  { animation-delay: 0.10s; }
-.stagger > *:nth-child(4)  { animation-delay: 0.15s; }
-.stagger > *:nth-child(5)  { animation-delay: 0.20s; }
-.stagger > *:nth-child(6)  { animation-delay: 0.25s; }
-.stagger > *:nth-child(7)  { animation-delay: 0.30s; }
-.stagger > *:nth-child(8)  { animation-delay: 0.35s; }
+/* Marquee track helper */
+.marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
 
-/* Reduced motion: kill animation, keep state changes */
+.stagger > * { animation: var(--animate-fade-up); }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.18s; }
+.stagger > *:nth-child(5) { animation-delay: 0.24s; }
+.stagger > *:nth-child(6) { animation-delay: 0.30s; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
